@@ -52,13 +52,18 @@ private final class RecordingNotificationService: NotificationService {
     struct Posted {
         let identifier: String
         let title: String
+        let subtitle: String
         let body: String
         let historyItemID: String?
         let categoryIdentifier: String
+        let threadIdentifier: String
+        let hasSound: Bool
+        let userInfoKeys: Set<String>
     }
 
     private(set) var posted: [Posted] = []
     private(set) var authorizationRequestCount = 0
+    var postSucceeds = true
 
     func requestAuthorization() async {
         authorizationRequestCount += 1
@@ -69,12 +74,16 @@ private final class RecordingNotificationService: NotificationService {
             Posted(
                 identifier: identifier,
                 title: content.title,
+                subtitle: content.subtitle,
                 body: content.body,
                 historyItemID: content.userInfo["historyItemID"] as? String,
-                categoryIdentifier: content.categoryIdentifier
+                categoryIdentifier: content.categoryIdentifier,
+                threadIdentifier: content.threadIdentifier,
+                hasSound: content.sound != nil,
+                userInfoKeys: Set(content.userInfo.keys.compactMap { $0 as? String })
             )
         )
-        return true
+        return postSucceeds
     }
 }
 
@@ -147,6 +156,14 @@ private final class RecordingRecoveryActionPrompter: RecoveryActionPrompting {
     }
 }
 
+@Test
+func persistedConversionDurationIsNonnegative() {
+    let createdAt = Date(timeIntervalSince1970: 100)
+
+    #expect(conversionDuration(createdAt: createdAt, updatedAt: createdAt.addingTimeInterval(125)) == 125)
+    #expect(conversionDuration(createdAt: createdAt, updatedAt: createdAt.addingTimeInterval(-1)) == 0)
+}
+
 @MainActor
 @Test
 func latestConversionOutcomeDrivesMenuIconAndPostsNotifications() async {
@@ -184,23 +201,48 @@ func latestConversionOutcomeDrivesMenuIconAndPostsNotifications() async {
     #expect(model.state.status == .conversionFailed)
     #expect(model.state.status.systemImage == "exclamationmark.circle.fill")
     #expect(notifications.posted.count == 1)
-    #expect(notifications.posted[0].title == "Conversion Failed")
+    #expect(notifications.posted[0].title == "Conversion failed")
+    #expect(notifications.posted[0].subtitle == "PNG → JPEG")
     #expect(notifications.posted[0].body == "Screenshot 2026-07-24 211244.jpg could not be converted. The original filename was restored. Open Conversion History for details before trying again.")
     #expect(notifications.authorizationRequestCount == 1)
     #expect(notifications.posted[0].historyItemID == failed.id.uuidString)
     #expect(notifications.posted[0].categoryIdentifier == "FILEFLIP_HISTORY")
+    #expect(notifications.posted[0].threadIdentifier == "fileflip.conversions")
+    #expect(notifications.posted[0].identifier == "fileconvert-\(failed.id.uuidString)-failed")
+    #expect(notifications.posted[0].hasSound)
+    #expect(notifications.posted[0].userInfoKeys == ["historyItemID"])
 
-    let succeeded = historyItem(fileName: "photo.jpg", outcome: .succeeded, date: Date().addingTimeInterval(1))
+    let succeeded = historyItem(
+        fileName: "/Users/example/Downloads/photo.jpg",
+        outcome: .succeeded,
+        date: Date().addingTimeInterval(1),
+        conversionDuration: 125
+    )
     runtime.current = snapshot(root: root, history: [succeeded, failed])
     await model.refresh()
 
     #expect(model.state.status == .monitoring)
     #expect(model.state.status.systemImage == "checkmark.circle.fill")
     #expect(notifications.posted.count == 2)
-    #expect(notifications.posted[1].title == "Conversion Complete")
+    #expect(notifications.posted[1].title == "Conversion complete")
+    #expect(notifications.posted[1].subtitle == "PNG → JPEG · 2m 5s")
     #expect(notifications.posted[1].body == "photo.jpg was converted successfully.")
     #expect(notifications.posted[1].historyItemID == succeeded.id.uuidString)
     #expect(notifications.posted[1].categoryIdentifier == "FILEFLIP_HISTORY")
+    #expect(notifications.posted[1].threadIdentifier == "fileflip.conversions")
+    #expect(notifications.posted[1].hasSound)
+    #expect(notifications.posted[1].userInfoKeys == ["historyItemID"])
+
+    let succeededWithoutDuration = historyItem(
+        fileName: "second.jpg",
+        outcome: .succeeded,
+        date: Date().addingTimeInterval(2)
+    )
+    runtime.current = snapshot(root: root, history: [succeededWithoutDuration, succeeded, failed])
+    await model.refresh()
+
+    #expect(notifications.posted.count == 3)
+    #expect(notifications.posted[2].subtitle == "PNG → JPEG")
 }
 
 @MainActor
@@ -403,6 +445,8 @@ func unresolvedRecoveryStatusTracksAllItemsAndLastResolution() async {
     #expect(model.state.statusDetail.contains("newer.pdf"))
     #expect(notifications.posted.count == 2)
     #expect(notifications.posted[0].body == "newer.pdf: The conversion needs review. Open Conversion History to review the recovery options.")
+    #expect(notifications.posted[0].title == "File recovery required")
+    #expect(notifications.posted[0].subtitle == "PNG → JPEG")
     #expect(notifications.posted[0].historyItemID == newer.id.uuidString)
     #expect(notifications.posted[0].categoryIdentifier == "FILEFLIP_RECOVERY")
 
@@ -507,6 +551,28 @@ func startupDoesNotRetainPriorFailureInMenuIcon() async {
     #expect(model.state.status.systemImage == "checkmark.circle.fill")
     #expect(notifications.posted.isEmpty)
 }
+@MainActor
+@Test
+func deniedNotificationDeliveryDoesNotCreateInAppFallbackOrReplayUnchangedOutcome() async {
+    let root = AuthorizedRoot(url: URL(fileURLWithPath: "/Users/example/Downloads"), volumeUUID: UUID())
+    let runtime = SnapshotRuntime(snapshot(root: root, history: []))
+    let notifications = RecordingNotificationService()
+    notifications.postSucceeds = false
+    let model = FileConvertViewModel(runtime: runtime, notificationService: notifications)
+    await model.refresh()
+
+    let failed = historyItem(fileName: "private/failure.jpg", outcome: .failed, date: Date())
+    runtime.current = snapshot(root: root, history: [failed])
+    await model.refresh()
+
+    #expect(notifications.posted.count == 1)
+    #expect(notifications.posted[0].body.hasPrefix("failure.jpg "))
+    #expect(model.alert == nil)
+
+    await model.refresh()
+    #expect(notifications.posted.count == 1)
+}
+
 
 private func snapshot(
     root: AuthorizedRoot,
@@ -534,6 +600,7 @@ private func historyItem(
     date: Date,
     requiredChoice: HistoryItemState.RequiredChoice? = nil,
     targetFormat: String = "JPEG",
+    conversionDuration: TimeInterval? = nil
 ) -> HistoryItemState {
     HistoryItemState(
         id: id,
@@ -544,6 +611,7 @@ private func historyItem(
         outcome: outcome,
         conversionBehavior: .replaceWithBackup,
         date: date,
+        conversionDuration: conversionDuration,
         providerName: "Native Image",
         providerVersion: "1",
         fidelityWarning: nil,

@@ -352,6 +352,10 @@ private actor ConversionEngine {
     }
 }
 
+func conversionDuration(createdAt: Date, updatedAt: Date) -> TimeInterval {
+    max(0, updatedAt.timeIntervalSince(createdAt))
+}
+
 @MainActor
 private final class ConcreteApplicationRuntime: ApplicationRuntime {
     private let storage: URL
@@ -482,6 +486,7 @@ private final class ConcreteApplicationRuntime: ApplicationRuntime {
                 outcome: job.state,
                 conversionBehavior: job.conversionBehavior,
                 date: job.updatedAt,
+                conversionDuration: conversionDuration(createdAt: job.createdAt, updatedAt: job.updatedAt),
                 providerName: job.providerID.map(Self.providerName),
                 providerVersion: job.providerVersion,
                 fidelityWarning: Self.fidelityWarning(for: job),

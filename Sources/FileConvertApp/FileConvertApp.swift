@@ -12,6 +12,9 @@ struct FileConvertApp: App {
     private let notificationRouter: SystemNotificationResponseRouter
 
     init() {
+        if ProcessInfo.processInfo.environment["FILECONVERT_UI_TEST_APPEARANCE"] == "dark" {
+            NSApplication.shared.appearance = NSAppearance(named: .darkAqua)
+        }
         let runtime: any ApplicationRuntime
         do {
             runtime = try ApplicationBootstrap.makeRuntime()
@@ -42,10 +45,13 @@ struct FileConvertApp: App {
             MenuBarContentView()
                 .environment(model)
         } label: {
-            Label(
-                "FileFlip — \(model.state.status.title)",
-                systemImage: model.state.status.systemImage
-            )
+            Label {
+                Text("FileFlip — \(model.state.status.title)")
+            } icon: {
+                Image(systemName: model.state.status.systemImage)
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(model.state.status.tint)
+            }
             .accessibilityLabel("FileFlip, \(model.state.status.accessibilityDescription)")
         }
         .menuBarExtraStyle(.window)
@@ -95,17 +101,27 @@ private final class SystemNotificationResponseRouter: NSObject, UNUserNotificati
 
     override init() {
         super.init()
+        let viewHistory = UNNotificationAction(
+            identifier: "VIEW_HISTORY",
+            title: "View in History",
+            options: [.foreground]
+        )
         let reviewRecovery = UNNotificationAction(
             identifier: "REVIEW_RECOVERY",
             title: "Review Recovery…",
             options: [.foreground]
+        )
+        let historyCategory = UNNotificationCategory(
+            identifier: "FILEFLIP_HISTORY",
+            actions: [viewHistory],
+            intentIdentifiers: []
         )
         let recoveryCategory = UNNotificationCategory(
             identifier: "FILEFLIP_RECOVERY",
             actions: [reviewRecovery],
             intentIdentifiers: []
         )
-        UNUserNotificationCenter.current().setNotificationCategories([recoveryCategory])
+        UNUserNotificationCenter.current().setNotificationCategories([historyCategory, recoveryCategory])
         UNUserNotificationCenter.current().delegate = self
     }
 

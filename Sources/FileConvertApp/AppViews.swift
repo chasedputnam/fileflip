@@ -23,53 +23,26 @@ struct MenuBarContentView: View {
     @Environment(FileConvertViewModel.self) private var model
     @Environment(\.openWindow) private var openWindow
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.large) {
-            VStack(alignment: .leading, spacing: AppSpacing.small) {
-                AppStatusMark(state: model.state.status)
-                Text(model.state.statusDetail)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier(AccessibilityID.status)
-            .accessibilityLabel("File-Flip status: \(model.state.status.accessibilityDescription). \(model.state.statusDetail)")
+        VStack(alignment: .leading, spacing: AppSpacing.medium) {
+            statusSection
 
-            Divider()
+            sectionDivider
 
-            if model.state.folders.isEmpty {
-                AppEmptyState(
-                    systemImage: "folder.badge.plus",
-                    title: "Choose where File-Flip works",
-                    message: "Only folders you authorize are monitored. Existing files are never scanned for conversions."
-                )
-                Button("Authorize Folders…", systemImage: "folder.badge.plus") {
-                    model.chooseFolders()
-                }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut("+", modifiers: [.command])
-                .accessibilityHint("Opens the macOS folder picker without preselecting a folder")
-                .accessibilityIdentifier(AccessibilityID.onboardingAuthorize)
-            } else {
-                Button(model.state.isMonitoringPaused ? "Resume Monitoring" : "Pause Monitoring", systemImage: model.state.isMonitoringPaused ? "play.fill" : "pause.fill") {
-                    model.toggleMonitoring()
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(model.isPerformingAction)
-                .keyboardShortcut("p", modifiers: [.command])
-                .accessibilityHint(model.state.isMonitoringPaused ? "Processes only new rename events after monitoring resumes" : "Stops queuing new conversions; a safe final replacement may finish")
-                .accessibilityIdentifier(AccessibilityID.pauseResume)
-            }
-
-            VStack(alignment: .leading, spacing: AppSpacing.small) {
+            VStack(alignment: .leading, spacing: AppSpacing.xSmall) {
                 Text("Recent Activity")
-                    .font(.headline)
+                    .font(.caption.weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(0.8)
+                    .foregroundStyle(AppColor.secondaryInk)
                 if model.state.recentActivity.isEmpty {
                     Text("Conversions and actionable failures will appear here.")
                         .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColor.secondaryInk)
+                        .padding(.vertical, AppSpacing.small)
                 } else {
                     ForEach(model.state.recentActivity) { item in
                         Button {
@@ -84,7 +57,7 @@ struct MenuBarContentView: View {
                 }
             }
 
-            Divider()
+            sectionDivider
 
             HStack(spacing: AppSpacing.small) {
                 if let recovery = model.state.history.first(where: \.needsRecoveryAction) {
@@ -110,9 +83,11 @@ struct MenuBarContentView: View {
                 Button("Quit") { NSApplication.shared.terminate(nil) }
                     .keyboardShortcut("q", modifiers: [.command])
             }
+            .controlSize(.small)
         }
         .padding(AppSpacing.large)
         .frame(width: AppLayout.menuWidth)
+        .background(popoverBackground)
         .animation(reduceMotion ? nil : AppMotion.stateChange, value: model.state.status)
         .onChange(of: model.historyNavigationRequest) { _, request in
             guard let request else { return }
@@ -145,29 +120,122 @@ struct MenuBarContentView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private var statusSection: some View {
+        HStack(alignment: .center, spacing: AppSpacing.medium) {
+            AppStatusMark(state: model.state.status)
+            VStack(alignment: .leading, spacing: AppSpacing.xSmall) {
+                Text(model.state.status.title)
+                    .font(.headline)
+                    .foregroundStyle(AppColor.primaryInk)
+                Text(model.state.statusDetail)
+                    .font(.caption)
+                    .foregroundStyle(AppColor.secondaryInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: AppSpacing.small)
+            if !model.state.folders.isEmpty {
+                Button(
+                    model.state.isMonitoringPaused ? "Resume" : "Pause",
+                    systemImage: model.state.isMonitoringPaused ? "play.fill" : "pause.fill"
+                ) {
+                    model.toggleMonitoring()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(model.isPerformingAction)
+                .keyboardShortcut("p", modifiers: [.command])
+                .accessibilityHint(model.state.isMonitoringPaused ? "Processes only new rename events after monitoring resumes" : "Stops queuing new conversions; a safe final replacement may finish")
+                .accessibilityIdentifier(AccessibilityID.pauseResume)
+            }
+        }
+        .accessibilityIdentifier(AccessibilityID.status)
+        .accessibilityLabel("File-Flip status: \(model.state.status.accessibilityDescription). \(model.state.statusDetail)")
+
+        if model.state.folders.isEmpty {
+            AppEmptyState(
+                systemImage: "folder.badge.plus",
+                title: "Choose where File-Flip works",
+                message: "Only folders you authorize are monitored. Existing files are never scanned for conversions."
+            )
+            Button("Authorize Folders…", systemImage: "folder.badge.plus") {
+                model.chooseFolders()
+            }
+            .buttonStyle(.borderedProminent)
+            .keyboardShortcut("+", modifiers: [.command])
+            .accessibilityHint("Opens the macOS folder picker without preselecting a folder")
+            .accessibilityIdentifier(AccessibilityID.onboardingAuthorize)
+        }
+    }
+
+    private var sectionDivider: some View {
+        Divider()
+            .overlay(AppColor.divider)
+    }
+
+    private var popoverBackground: Color {
+        if reduceTransparency || colorSchemeContrast == .increased {
+            Color(nsColor: .windowBackgroundColor)
+        } else {
+            AppColor.popoverSurface
+        }
+    }
 }
 
 private struct RecentActivityRow: View {
+    @State private var isHovered = false
     let item: HistoryItemState
 
     var body: some View {
         HStack(spacing: AppSpacing.small) {
-            Image(systemName: item.showsSuccessMark ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                .foregroundStyle(item.showsSuccessMark ? AppColor.success : AppColor.warning)
-                .accessibilityHidden(true)
+            AppIconTile(
+                systemImage: presentation.systemImage,
+                foreground: presentation.foreground,
+                fill: presentation.fill
+            )
             VStack(alignment: .leading, spacing: AppSpacing.xSmall) {
                 Text(item.fileName)
+                    .fontWeight(.medium)
+                    .foregroundStyle(AppColor.primaryInk)
                     .lineLimit(1)
                 Text("\(item.sourceFormat) → \(item.targetFormat) · \(item.outcomeText)")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColor.secondaryInk)
+                    .lineLimit(1)
             }
-            Spacer()
+            Spacer(minLength: AppSpacing.xSmall)
             Text(item.date, style: .relative)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.caption2)
+                .foregroundStyle(AppColor.secondaryInk)
+                .lineLimit(1)
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppColor.secondaryInk)
+                .accessibilityHidden(true)
         }
-        .contentShape(Rectangle())
+        .padding(.horizontal, AppSpacing.xSmall)
+        .padding(.vertical, AppSpacing.small)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(isHovered ? AppColor.controlFill : Color.clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .onHover { isHovered = $0 }
+    }
+
+    private var presentation: (systemImage: String, foreground: Color, fill: Color) {
+        if item.showsSuccessMark {
+            return ("checkmark", AppColor.success, AppColor.successFill)
+        }
+        return switch item.outcome {
+        case .failed:
+            ("exclamationmark", AppColor.critical, AppColor.criticalFill)
+        case .needsRecovery:
+            ("cross.case.fill", AppColor.critical, AppColor.criticalFill)
+        case .skipped, .cancelled:
+            ("minus", AppColor.warning, AppColor.warningFill)
+        default:
+            ("arrow.triangle.2.circlepath", AppColor.progress, AppColor.progressFill)
+        }
     }
 }
 

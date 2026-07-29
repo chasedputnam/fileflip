@@ -620,23 +620,41 @@ final class FileConvertViewModel {
         for item in state.history where previousOutcomes[item.id] != item.outcome && notifiedJobOutcomes[item.id] != item.outcome {
             guard item.outcome == .succeeded || item.outcome == .failed || item.outcome == .needsRecovery else { continue }
             let content = UNMutableNotificationContent()
+            let basename = URL(fileURLWithPath: item.fileName).lastPathComponent
+            let formatSummary = "\(item.sourceFormat) → \(item.targetFormat)"
+            content.subtitle = formatSummary
             if item.outcome == .succeeded {
-                content.title = "Conversion Complete"
-                content.body = "\(item.fileName) was converted successfully."
+                content.title = "Conversion complete"
+                if let duration = item.conversionDuration {
+                    content.subtitle += " · \(Self.formattedDuration(duration))"
+                }
+                content.body = "\(basename) was converted successfully."
             } else if item.outcome == .needsRecovery {
-                content.title = "File Recovery Required"
-                content.body = "\(item.fileName): \(item.errorSummary ?? "The conversion needs review.") \(Self.notificationNextAction(for: item))"
+                content.title = "File recovery required"
+                content.body = "\(basename): \(item.errorSummary ?? "The conversion needs review.") \(Self.notificationNextAction(for: item))"
             } else {
-                content.title = "Conversion Failed"
-                content.body = "\(item.fileName) could not be converted. The original filename was restored. \(Self.notificationNextAction(for: item))"
+                content.title = "Conversion failed"
+                content.body = "\(basename) could not be converted. The original filename was restored. \(Self.notificationNextAction(for: item))"
             }
             content.userInfo = ["historyItemID": item.id.uuidString]
             content.categoryIdentifier = item.outcome == .needsRecovery ? "FILEFLIP_RECOVERY" : "FILEFLIP_HISTORY"
+            content.threadIdentifier = "fileflip.conversions"
             content.sound = .default
             if await notificationService.post(identifier: "fileconvert-\(item.id.uuidString)-\(item.outcome.rawValue)", content: content) {
                 notifiedJobOutcomes[item.id] = item.outcome
             }
         }
+    }
+
+    private static func formattedDuration(_ duration: TimeInterval) -> String {
+        let totalSeconds = max(0, Int(duration.rounded()))
+        if totalSeconds < 60 {
+            return "\(totalSeconds)s"
+        }
+        if totalSeconds < 3_600 {
+            return "\(totalSeconds / 60)m \(totalSeconds % 60)s"
+        }
+        return "\(totalSeconds / 3_600)h \((totalSeconds % 3_600) / 60)m"
     }
 
     private static func notificationNextAction(for item: HistoryItemState) -> String {

@@ -138,6 +138,7 @@ struct HistoryItemState: Identifiable, Sendable {
     let outcome: PersistentJobState
     let conversionBehavior: ConversionBehavior
     let date: Date
+    var conversionDuration: TimeInterval? = nil
     let providerName: String?
     let providerVersion: String?
     let fidelityWarning: String?

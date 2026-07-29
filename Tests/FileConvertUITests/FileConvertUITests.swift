@@ -727,6 +727,16 @@ final class FileConvertUITests: XCTestCase {
         ).firstMatch
     }
 
+    func testSuccessfulConversionAppearsInDarkMode() {
+        application.launchEnvironment["FILECONVERT_UI_TEST_APPEARANCE"] = "dark"
+        launch(scenario: "successful")
+        openMenuBarExtra()
+        XCTAssertTrue(statusSummary.waitForExistence(timeout: 2))
+        XCTAssertTrue(buttonContaining("photo.png").waitForExistence(timeout: 2))
+        XCTAssertTrue(buttonContaining("Converted").exists)
+    }
+
+
     private func launch(scenario: String) {
         application.launchEnvironment["FILECONVERT_UI_TEST_SCENARIO"] = scenario
         application.launch()

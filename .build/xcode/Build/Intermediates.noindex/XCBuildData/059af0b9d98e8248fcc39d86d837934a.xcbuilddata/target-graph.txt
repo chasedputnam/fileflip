@@ -1,7 +1,0 @@
-Target dependency graph (3 targets)
-Target 'FileConvertApp' in project 'FileFlip'
-➜ Explicit dependency on target 'FileConvertCore' in project 'FileFlip'
-➜ Explicit dependency on target 'FileConvertProviders' in project 'FileFlip'
-Target 'FileConvertProviders' in project 'FileFlip'
-➜ Explicit dependency on target 'FileConvertCore' in project 'FileFlip'
-Target 'FileConvertCore' in project 'FileFlip' (no dependencies)
