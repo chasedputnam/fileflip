@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "revision": "release-gate-validation-2026-07-29",
+  "recordedAt": "2026-07-29T01:04:18.259231Z",
+  "suiteRuns": [],
+  "thresholds": {},
+  "release": {},
+  "smokeMatrix": [],
+  "packagedMedia": {
+    "matrixReport": {
+      "status": "passed",
+      "command": [
+        "swift",
+        "run",
+        "packaged-media-matrix",
+        "--app",
+        "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Products/Debug/FileFlip.app",
+        "--fixtures",
+        "/Users/chase.putnam/repo/file-flip/Tests/Fixtures/Media/manifest.json",
+        "--report",
+        "/Users/chase.putnam/repo/file-flip/.build/evidence/media-matrix-release-check.json"
+      ],
+      "observedAt": "2026-07-29T01:04:18.259231Z",
+      "revision": "release-gate-validation-2026-07-29",
+      "artifact": "/Users/chase.putnam/repo/file-flip/.build/evidence/media-matrix-release-check.json"
+    },
+    "installationSmoke": {
+      "status": "passed",
+      "command": [
+        "scripts/smoke-installed-media.sh",
+        "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Products/Debug/FileFlip.app",
+        "/Users/chase.putnam/repo/file-flip/Tests/Fixtures/Media/manifest.json"
+      ],
+      "observedAt": "2026-07-29T01:04:18.259231Z",
+      "revision": "release-gate-validation-2026-07-29",
+      "artifact": "/Users/chase.putnam/repo/file-flip/.build/evidence/installation-smoke.log"
+    }
+  }
+}

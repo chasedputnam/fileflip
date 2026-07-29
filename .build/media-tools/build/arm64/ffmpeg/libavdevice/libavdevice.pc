@@ -1,0 +1,14 @@
+prefix=/Users/chase.putnam/repo/file-flip/.build/media-tools/build/arm64/prefix
+exec_prefix=${prefix}
+libdir=/Users/chase.putnam/repo/file-flip/.build/media-tools/build/arm64/prefix/lib
+includedir=/Users/chase.putnam/repo/file-flip/.build/media-tools/build/arm64/prefix/include
+
+Name: libavdevice
+Description: FFmpeg device handling library
+Version: 62.3.102
+Requires: libavfilter >= 11.14.102, libswscale >= 9.5.102, libavformat >= 62.12.102, libavcodec >= 62.28.102, libswresample >= 6.3.102, libavutil >= 60.26.102
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavdevice -lm
+Libs.private: 
+Cflags: -I${includedir}

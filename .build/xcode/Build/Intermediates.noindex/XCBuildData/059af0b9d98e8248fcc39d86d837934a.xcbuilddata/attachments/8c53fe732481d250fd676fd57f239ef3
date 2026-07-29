@@ -1,0 +1,15 @@
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileConvertCore_vers.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/AppCoordinator.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/BoundaryGuards.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ContentDetector.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/Domain.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FSEventSource.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileTransaction.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JobState.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JournalStore.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RecoveryUndo.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenameCorrelator.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenamePipeline.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ResourceProbe.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RootAuthorization.o
+/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/SingleInstanceLock.o

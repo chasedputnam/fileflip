@@ -1,0 +1,1 @@
+This fixture name is intentionally never interpolated into a shell command.

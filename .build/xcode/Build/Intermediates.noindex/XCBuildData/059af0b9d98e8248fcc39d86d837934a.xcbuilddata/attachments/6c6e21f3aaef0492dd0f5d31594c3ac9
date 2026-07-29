@@ -1,0 +1,149 @@
+{
+  "" : {
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileConvertCore-primary.dia",
+    "emit-module-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileConvertCore-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileConvertCore-primary-emit-module.dia",
+    "pch" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileConvertCore-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileConvertCore-primary.swiftdeps"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/AppCoordinator.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/AppCoordinator.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/AppCoordinator.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/AppCoordinator.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/AppCoordinator.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/AppCoordinator.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/AppCoordinator.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/AppCoordinator.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/AppCoordinator~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/BoundaryGuards.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/BoundaryGuards.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/BoundaryGuards.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/BoundaryGuards.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/BoundaryGuards.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/BoundaryGuards.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/BoundaryGuards.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/BoundaryGuards.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/BoundaryGuards~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/ContentDetector.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ContentDetector.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ContentDetector.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ContentDetector.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ContentDetector.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ContentDetector.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ContentDetector.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ContentDetector.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ContentDetector~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/Domain.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/Domain.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/Domain.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/Domain.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/Domain.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/Domain.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/Domain.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/Domain.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/Domain~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/FSEventSource.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FSEventSource.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FSEventSource.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FSEventSource.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FSEventSource.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FSEventSource.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FSEventSource.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FSEventSource.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FSEventSource~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/FileTransaction.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileTransaction.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileTransaction.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileTransaction.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileTransaction.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileTransaction.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileTransaction.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileTransaction.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/FileTransaction~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/JobState.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JobState.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JobState.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JobState.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JobState.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JobState.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JobState.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JobState.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JobState~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/JournalStore.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JournalStore.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JournalStore.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JournalStore.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JournalStore.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JournalStore.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JournalStore.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JournalStore.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/JournalStore~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RecoveryUndo.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RecoveryUndo.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RecoveryUndo.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RecoveryUndo.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RecoveryUndo.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RecoveryUndo.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RecoveryUndo.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RecoveryUndo.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RecoveryUndo~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RenameCorrelator.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenameCorrelator.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenameCorrelator.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenameCorrelator.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenameCorrelator.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenameCorrelator.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenameCorrelator.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenameCorrelator.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenameCorrelator~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RenamePipeline.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenamePipeline.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenamePipeline.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenamePipeline.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenamePipeline.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenamePipeline.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenamePipeline.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenamePipeline.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RenamePipeline~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/ResourceProbe.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ResourceProbe.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ResourceProbe.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ResourceProbe.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ResourceProbe.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ResourceProbe.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ResourceProbe.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ResourceProbe.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/ResourceProbe~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RootAuthorization.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RootAuthorization.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RootAuthorization.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RootAuthorization.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RootAuthorization.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RootAuthorization.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RootAuthorization.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RootAuthorization.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/RootAuthorization~partial.swiftmodule"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/SingleInstanceLock.swift" : {
+    "const-values" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/SingleInstanceLock.swiftconstvalues",
+    "dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/SingleInstanceLock.d",
+    "diagnostics" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/SingleInstanceLock.dia",
+    "index-unit-output-path" : "/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/SingleInstanceLock.o",
+    "llvm-bc" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/SingleInstanceLock.bc",
+    "object" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/SingleInstanceLock.o",
+    "swift-dependencies" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/SingleInstanceLock.swiftdeps",
+    "swiftmodule" : "/Users/chase.putnam/repo/file-flip/.build/xcode/Build/Intermediates.noindex/FileFlip.build/Debug/FileConvertCore.build/Objects-normal/arm64/SingleInstanceLock~partial.swiftmodule"
+  }
+}

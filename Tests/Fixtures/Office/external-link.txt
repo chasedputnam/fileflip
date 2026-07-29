@@ -1,0 +1,1 @@
+External-link package fixture descriptor: xl/externalLinks/externalLink1.xml

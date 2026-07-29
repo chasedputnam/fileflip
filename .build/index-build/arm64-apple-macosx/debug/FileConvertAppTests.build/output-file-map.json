@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/primary.swiftdeps"
+  },
+  "/Users/chase.putnam/repo/file-flip/Tests/FileConvertAppTests/FileConvertViewModelTests.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FileConvertViewModelTests.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FileConvertViewModelTests.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FileConvertViewModelTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FileConvertViewModelTests.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FileConvertViewModelTests.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Tests/FileConvertAppTests/FutureJobDefaultsTests.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FutureJobDefaultsTests.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FutureJobDefaultsTests.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FutureJobDefaultsTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FutureJobDefaultsTests.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertAppTests.build/FutureJobDefaultsTests.dia"
+  }
+}

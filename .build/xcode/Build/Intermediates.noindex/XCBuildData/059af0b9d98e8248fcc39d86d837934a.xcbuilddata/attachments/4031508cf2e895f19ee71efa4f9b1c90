@@ -1,0 +1,14 @@
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/AppCoordinator.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/BoundaryGuards.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/ContentDetector.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/Domain.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/FSEventSource.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/FileTransaction.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/JobState.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/JournalStore.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RecoveryUndo.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RenameCorrelator.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RenamePipeline.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/ResourceProbe.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RootAuthorization.swift
+/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/SingleInstanceLock.swift

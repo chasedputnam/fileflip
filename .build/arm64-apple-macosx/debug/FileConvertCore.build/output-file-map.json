@@ -1,0 +1,103 @@
+{
+  "": {
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/primary.swiftdeps"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/AppCoordinator.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/AppCoordinator.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/AppCoordinator.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/AppCoordinator~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/AppCoordinator.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/AppCoordinator.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/BoundaryGuards.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/BoundaryGuards.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/BoundaryGuards.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/BoundaryGuards~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/BoundaryGuards.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/BoundaryGuards.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/ContentDetector.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ContentDetector.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ContentDetector.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ContentDetector~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ContentDetector.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ContentDetector.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/Domain.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/Domain.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/Domain.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/Domain~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/Domain.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/Domain.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/FSEventSource.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FSEventSource.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FSEventSource.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FSEventSource~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FSEventSource.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FSEventSource.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/FileTransaction.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FileTransaction.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FileTransaction.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FileTransaction~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FileTransaction.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/FileTransaction.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/JobState.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JobState.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JobState.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JobState~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JobState.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JobState.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/JournalStore.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JournalStore.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JournalStore.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JournalStore~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JournalStore.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/JournalStore.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RecoveryUndo.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RecoveryUndo.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RecoveryUndo.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RecoveryUndo~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RecoveryUndo.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RecoveryUndo.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RenameCorrelator.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenameCorrelator.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenameCorrelator.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenameCorrelator~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenameCorrelator.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenameCorrelator.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RenamePipeline.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenamePipeline.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenamePipeline.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenamePipeline~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenamePipeline.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RenamePipeline.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/ResourceProbe.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ResourceProbe.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ResourceProbe.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ResourceProbe~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ResourceProbe.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/ResourceProbe.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/RootAuthorization.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RootAuthorization.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RootAuthorization.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RootAuthorization~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RootAuthorization.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/RootAuthorization.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertCore/SingleInstanceLock.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/SingleInstanceLock.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/SingleInstanceLock.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/SingleInstanceLock~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/SingleInstanceLock.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertCore.build/SingleInstanceLock.dia"
+  }
+}

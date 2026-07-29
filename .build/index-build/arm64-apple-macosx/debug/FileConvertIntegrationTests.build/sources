@@ -1,0 +1,10 @@
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/CertifiedMediaFixturesTests.swift
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/ConcurrencyBoundaryTests.swift
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/DocumentTransactionIntegrationTests.swift
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/FSEventSourceIntegrationTests.swift
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/IntegrationSmokeTests.swift
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/MediaProviderIntegrationTests.swift
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/NativeImageTransactionIntegrationTests.swift
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/RenamePipelineIntegrationTests.swift
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/TransactionBoundaryTests.swift
+/Users/chase.putnam/repo/file-flip/Tests/FileConvertIntegrationTests/TransactionIntegrationTests.swift

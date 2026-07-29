@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "application": {
+    "bundleIdentifier": "app.fileconvert.FileConvert",
+    "executable": "Contents/MacOS/FileFlip",
+    "infoPlist": "Contents/Info.plist",
+    "minimumMacOSMajor": 14,
+    "requiredArchitectures": ["arm64"],
+    "forbiddenEntitlements": ["com.apple.security.network.client", "com.apple.security.network.server"],
+    "permittedEmbeddedFrameworks": ["FileConvertCore.framework", "FileConvertProviders.framework"]
+  },
+  "fixturePolicy": {
+    "defaultMode": "compare-only",
+    "updateEnvironment": "FILECONVERT_UPDATE_FIXTURES=1",
+    "updateRequiresReviewableDiff": true
+  },
+  "fixtureInventories": [
+    {
+      "id": "native-images",
+      "kind": "hashed-static",
+      "path": "Tests/FileConvertProvidersTests/Fixtures/Images/manifest.json",
+      "compareCommand": ["python3", "Scripts/check-fixtures.py", "Tests/FileConvertProvidersTests/Fixtures/Images/manifest.json"],
+      "updateCommand": ["FILECONVERT_UPDATE_FIXTURES=1", "python3", "Scripts/check-fixtures.py", "--update", "Tests/FileConvertProvidersTests/Fixtures/Images/manifest.json"]
+    },
+    {
+      "id": "document-provider-inputs",
+      "kind": "unhashed-static-inputs",
+      "paths": [
+        "Tests/FileConvertProvidersTests/Fixtures/phase7-unicode.md",
+        "Tests/FileConvertProvidersTests/Fixtures/phase7-safe-links.html",
+        "Tests/FileConvertProvidersTests/Fixtures/phase7-active-content.html",
+        "Tests/FileConvertProvidersTests/Fixtures/phase7-external-resource.html",
+        "Tests/FileConvertProvidersTests/Fixtures/phase7-unsupported.html",
+        "Tests/FileConvertProvidersTests/Fixtures/phase7-malformed.pdf"
+      ],
+      "certification": "runtime transaction coverage must be recorded as external evidence"
+    },
+    {
+      "id": "certified-media-sources",
+      "kind": "certified-media",
+      "path": "Tests/Fixtures/Media/manifest.json",
+      "compareCommand": ["scripts/check-media-fixtures.py", "--media-tools", "Sources/FileConvertApp/Resources/MediaTools", "Tests/Fixtures/Media/manifest.json"],
+      "certification": "exactly one independently probed, hashed source for each installed media format"
+    },
+    {
+      "id": "office-negative-fixtures",
+      "kind": "negative-only",
+      "paths": [
+        "Tests/Fixtures/Office/plain.csv",
+        "Tests/Fixtures/Office/password-protected.rtf",
+        "Tests/Fixtures/Office/external-link.txt",
+        "Tests/Fixtures/Office/macro-enabled.xlsm",
+        "Tests/Fixtures/Office/command-injection-name.txt"
+      ],
+      "certification": "not an advertised-pair certification; a signed local LibreOffice matrix is required before office pairs are release-certified"
+    }
+  ],
+  "packagedMedia": {
+    "contractVersion": 1,
+    "providerID": "ffmpeg",
+    "candidateResourceDirectory": "Contents/Resources/MediaTools",
+    "fixtureManifest": "Tests/Fixtures/Media/manifest.json",
+    "fixtureCompareCommand": ["scripts/check-media-fixtures.py", "--media-tools", "Sources/FileConvertApp/Resources/MediaTools", "Tests/Fixtures/Media/manifest.json"],
+    "contractExportCommand": ["swift", "run", "packaged-media-contract"],
+    "consistencyCommand": ["python3", "scripts/check-media-capabilities.py"],
+    "matrixCommand": ["swift", "run", "packaged-media-matrix", "--app", "{app}", "--fixtures", "{root}/Tests/Fixtures/Media/manifest.json", "--report", "{report}"],
+    "installationSmokeCommand": ["scripts/smoke-installed-media.sh", "{app}", "{root}/Tests/Fixtures/Media/manifest.json"],
+    "reportSchemaVersion": 1,
+    "maximumEvidenceAgeDays": 30,
+    "expected": {
+      "formatCount": 13,
+      "routeCount": 76,
+      "audioRouteCount": 56,
+      "videoRouteCount": 20,
+      "routeSetSHA256": "c64bb5ac29e4f126f42e32a48b096e42668ed412bdbbdf1ab5ae3c35a155924d",
+      "audioFormats": [
+        {"canonicalExtension": "mp3", "aliases": []},
+        {"canonicalExtension": "m4a", "aliases": []},
+        {"canonicalExtension": "aac", "aliases": []},
+        {"canonicalExtension": "wav", "aliases": []},
+        {"canonicalExtension": "aiff", "aliases": ["aif"]},
+        {"canonicalExtension": "flac", "aliases": []},
+        {"canonicalExtension": "ogg", "aliases": []},
+        {"canonicalExtension": "opus", "aliases": []}
+      ],
+      "videoFormats": [
+        {"canonicalExtension": "mp4", "aliases": []},
+        {"canonicalExtension": "m4v", "aliases": []},
+        {"canonicalExtension": "mov", "aliases": []},
+        {"canonicalExtension": "mkv", "aliases": []},
+        {"canonicalExtension": "webm", "aliases": []}
+      ]
+    }
+  },
+  "requiredSuites": [
+    {"id": "unit-contract", "commandTemplate": ["xcodebuild", "test", "-project", "FileFlip.xcodeproj", "-scheme", "FileFlip", "-destination", "platform=macOS,arch={architecture}"], "platforms": ["apple-silicon-oldest", "current-macos-apple-silicon"]},
+    {"id": "real-provider-integration", "commandTemplate": ["xcodebuild", "test", "-project", "FileFlip.xcodeproj", "-scheme", "FileFlip", "-only-testing:FileConvertIntegrationTests", "-destination", "platform=macOS,arch={architecture}"], "platforms": ["apple-silicon-oldest", "current-macos-apple-silicon"]},
+    {"id": "fault-injection", "commandTemplate": ["xcodebuild", "test", "-project", "FileFlip.xcodeproj", "-scheme", "FileFlip", "-only-testing:FileConvertIntegrationTests/TransactionIntegrationTests", "-destination", "platform=macOS,arch={architecture}"], "platforms": ["apple-silicon-oldest", "current-macos-apple-silicon"]},
+    {"id": "privacy", "commandTemplate": ["xcodebuild", "test", "-project", "FileFlip.xcodeproj", "-scheme", "FileFlip", "-only-testing:FileConvertProvidersTests/DocumentProviderTests", "-destination", "platform=macOS,arch={architecture}"], "platforms": ["apple-silicon-oldest", "current-macos-apple-silicon"]},
+    {"id": "idle-resource", "commandTemplate": ["xcodebuild", "test", "-project", "FileFlip.xcodeproj", "-scheme", "FileFlip", "-destination", "platform=macOS,arch={architecture}"], "platforms": ["apple-silicon-oldest", "current-macos-apple-silicon"]},
+    {"id": "ui", "commandTemplate": ["xcodebuild", "test", "-project", "FileFlip.xcodeproj", "-scheme", "FileFlip", "-only-testing:FileConvertUITests", "-destination", "platform=macOS,arch={architecture}"], "platforms": ["apple-silicon-oldest", "current-macos-apple-silicon"]},
+    {"id": "rename-end-to-end", "commandTemplate": ["xcodebuild", "test", "-project", "FileFlip.xcodeproj", "-scheme", "FileFlip", "-only-testing:FileConvertIntegrationTests", "-destination", "platform=macOS,arch={architecture}"], "platforms": ["apple-silicon-oldest", "current-macos-apple-silicon"]}
+  ],
+  "platforms": {
+    "apple-silicon-oldest": {"architecture": "arm64", "macOSMajor": 14},
+    "current-macos-apple-silicon": {"architecture": "arm64", "macOSMajor": "current"}
+  },
+  "thresholds": {
+    "idleAverageCPUPercent": {"operator": "<=", "value": 0.5, "unit": "percent"},
+    "idleResidentMemoryMiB": {"operator": "<=", "value": 100, "unit": "MiB"},
+    "globalConcurrentJobs": {"operator": "<=", "value": 2, "unit": "jobs"},
+    "officeConcurrentJobs": {"operator": "<=", "value": 1, "unit": "jobs"},
+    "outboundConnections": {"operator": "==", "value": 0, "unit": "connections"},
+    "sourceByteLosses": {"operator": "==", "value": 0, "unit": "files"},
+    "mediaDurationTolerance": {"formula": "max(250 ms, 0.5% of source duration)"}
+  },
+  "externalEvidence": {
+    "notarization": "accepted notarization assessment of this signed release candidate",
+    "ownerOnlyDataPermissions": "observed Application Support, backup, and temporary directory modes are owner-only",
+    "codecLicenseReview": "review approval for codec patent and LGPL compliance",
+    "providerManifestReview": "review approval for each bundled provider source/build/license manifest",
+    "fixtureCoverage": "every advertised capability has a passing certified fixture and independent validator",
+    "faultInjection": "no source-byte loss at every backup, validation, sibling-copy, flush, replace, and journal boundary",
+    "privacy": "zero outbound connections during onboarding, providers, history, and undo"
+  },
+  "evidenceSchema": {
+    "requiredTopLevelKeys": ["schemaVersion", "revision", "recordedAt", "suiteRuns", "thresholds", "release", "smokeMatrix", "packagedMedia"],
+    "suiteRunRequiredKeys": ["suite", "command", "platform", "architecture", "macOSVersion", "observedAt", "revision", "exitCode", "resultArtifact"],
+    "externalEvidenceRequiredKeys": ["status", "observedAt", "revision", "artifact"],
+    "faultBoundaries": ["backup", "validation", "sibling-copy", "flush", "replace", "journal"],
+    "privacyFlows": ["onboarding", "providers", "history", "undo"],
+    "smokeRequiredKeys": ["family", "fixture", "authorizedFolder", "renameObserved", "outputIndependentlyOpened", "undoSucceeded", "pauseResumeSucceeded", "restartNoReplay", "observedAt", "revision", "artifact"],
+    "packagedMediaEvidenceRequiredKeys": ["matrixReport", "installationSmoke"],
+    "packagedMediaRunRequiredKeys": ["status", "command", "observedAt", "revision", "artifact"]
+  }
+}

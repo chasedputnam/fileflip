@@ -1,0 +1,5 @@
+Installed packaged media smoke passed: mp3->opus, mp4->webm
+[0/1] Planning build
+Building for debugging...
+[0/3] Write swift-version--58304C5D6DBC2206.txt
+Build of product 'packaged-media-smoke' complete! (0.30s)

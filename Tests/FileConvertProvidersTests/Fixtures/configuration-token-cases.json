@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "name": "unquoted-options",
+      "input": "ffmpeg version 8.1.2\n  configuration: --disable-network --enable-protocol=file\nlibavutil 60.0.0\n",
+      "arguments": ["--disable-network", "--enable-protocol=file"]
+    },
+    {
+      "name": "single-quoted-list",
+      "input": "configuration:\n  --enable-decoder='aac,alac,flac'\n  --enable-encoder='aac,flac'\n",
+      "arguments": ["--enable-decoder=aac,alac,flac", "--enable-encoder=aac,flac"]
+    },
+    {
+      "name": "quoted-path-with-spaces",
+      "input": "configuration:\n  --extra-cflags='-I/Volumes/Build Root/include'\n  --extra-ldflags=\"-L/Volumes/Build Root/lib\"\n",
+      "arguments": ["--extra-cflags=-I/Volumes/Build Root/include", "--extra-ldflags=-L/Volumes/Build Root/lib"]
+    },
+    {
+      "name": "escaped-space",
+      "input": "configuration: --extra-libs=-lfoo\\ bar --disable-debug\n",
+      "arguments": ["--extra-libs=-lfoo bar", "--disable-debug"]
+    },
+    {
+      "name": "semantic-value-a",
+      "input": "configuration: --enable-decoder=aac,flac\n",
+      "arguments": ["--enable-decoder=aac,flac"]
+    },
+    {
+      "name": "semantic-value-b",
+      "input": "configuration: --enable-decoder=aac,opus\n",
+      "arguments": ["--enable-decoder=aac,opus"]
+    },
+    {
+      "name": "unterminated-single-quote",
+      "input": "configuration: --extra-cflags='-I/broken path\n",
+      "error": true
+    },
+    {
+      "name": "unsupported-escape",
+      "input": "configuration: --prefix=/tmp\\qbad\n",
+      "error": true
+    },
+    {
+      "name": "duplicate-option",
+      "input": "configuration: --disable-network --disable-network\n",
+      "error": true
+    },
+    {
+      "name": "missing-configuration",
+      "input": "ffmpeg version 8.1.2\nlibavutil 60.0.0\n",
+      "error": true
+    }
+  ]
+}

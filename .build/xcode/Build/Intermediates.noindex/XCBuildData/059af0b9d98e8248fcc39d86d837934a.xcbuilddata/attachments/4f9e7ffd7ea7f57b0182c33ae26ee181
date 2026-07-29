@@ -1,0 +1,3 @@
+framework module FileConvertCore {
+  header "FileConvertCore-Swift.h"
+}

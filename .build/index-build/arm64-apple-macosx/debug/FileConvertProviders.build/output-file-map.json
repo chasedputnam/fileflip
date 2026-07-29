@@ -1,0 +1,110 @@
+{
+  "": {
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/primary.swiftdeps"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/CapabilityCertification.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/CapabilityCertification.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/CapabilityCertification.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/CapabilityCertification~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/CapabilityCertification.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/CapabilityCertification.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/DocumentValidators.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/DocumentValidators.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/DocumentValidators.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/DocumentValidators~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/DocumentValidators.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/DocumentValidators.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/FFProbeContentProbe.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFProbeContentProbe.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFProbeContentProbe.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFProbeContentProbe~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFProbeContentProbe.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFProbeContentProbe.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/FFmpegMediaProvider.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFmpegMediaProvider.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFmpegMediaProvider.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFmpegMediaProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFmpegMediaProvider.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFmpegMediaProvider.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/FFprobeMediaValidator.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFprobeMediaValidator.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFprobeMediaValidator.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFprobeMediaValidator~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFprobeMediaValidator.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/FFprobeMediaValidator.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/InstalledMediaContract.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/InstalledMediaContract.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/InstalledMediaContract.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/InstalledMediaContract~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/InstalledMediaContract.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/InstalledMediaContract.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/LibreOfficeProvider.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/LibreOfficeProvider.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/LibreOfficeProvider.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/LibreOfficeProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/LibreOfficeProvider.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/LibreOfficeProvider.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/MarkdownHTMLProvider.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MarkdownHTMLProvider.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MarkdownHTMLProvider.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MarkdownHTMLProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MarkdownHTMLProvider.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MarkdownHTMLProvider.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/MediaToolVerification.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MediaToolVerification.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MediaToolVerification.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MediaToolVerification~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MediaToolVerification.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/MediaToolVerification.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/NativeImageProvider.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageProvider.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageProvider.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageProvider.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageProvider.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/NativeImageValidator.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageValidator.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageValidator.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageValidator~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageValidator.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativeImageValidator.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/NativePDFProvider.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativePDFProvider.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativePDFProvider.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativePDFProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativePDFProvider.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/NativePDFProvider.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/OfficeArtifactValidator.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/OfficeArtifactValidator.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/OfficeArtifactValidator.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/OfficeArtifactValidator~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/OfficeArtifactValidator.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/OfficeArtifactValidator.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/PackagedMediaBootstrap.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/PackagedMediaBootstrap.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/PackagedMediaBootstrap.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/PackagedMediaBootstrap~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/PackagedMediaBootstrap.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/PackagedMediaBootstrap.dia"
+  },
+  "/Users/chase.putnam/repo/file-flip/Sources/FileConvertProviders/ProviderRegistry.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/ProviderRegistry.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/ProviderRegistry.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/ProviderRegistry~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/ProviderRegistry.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertProviders.build/ProviderRegistry.dia"
+  }
+}

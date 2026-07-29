@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertPackageTests.build/primary.swiftdeps"
+  },
+  "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertPackageTests.build/runner.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertPackageTests.build/runner.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/index-build/arm64-apple-macosx/debug/FileConvertPackageTests.build/runner.dia"
+  }
+}

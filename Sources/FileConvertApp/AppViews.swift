@@ -1,0 +1,809 @@
+import FileConvertCore
+import SwiftUI
+
+private enum AccessibilityID {
+    static let status = "status.summary"
+    static let pauseResume = "monitoring.pause-resume"
+    static let addFolder = "folders.add"
+    static let openHistory = "history.open"
+    static let onboarding = "onboarding.content"
+    static let onboardingAuthorize = "onboarding.authorize"
+    static let historyList = "history.list"
+    static let historyDetail = "history.detail"
+    static let historyUndo = "history.undo"
+    static let historyKeepBoth = "history.keep-both"
+    static let historyClear = "history.clear"
+    static let historyRestoreRecovery = "history.restore-recovery"
+    static let historyResolveRecovery = "history.resolve-recovery"
+    static let providerList = "providers.list"
+    static let settings = "settings.content"
+}
+
+struct MenuBarContentView: View {
+    @Environment(FileConvertViewModel.self) private var model
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.large) {
+            VStack(alignment: .leading, spacing: AppSpacing.small) {
+                AppStatusMark(state: model.state.status)
+                Text(model.state.statusDetail)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier(AccessibilityID.status)
+            .accessibilityLabel("File-Flip status: \(model.state.status.accessibilityDescription). \(model.state.statusDetail)")
+
+            Divider()
+
+            if model.state.folders.isEmpty {
+                AppEmptyState(
+                    systemImage: "folder.badge.plus",
+                    title: "Choose where File-Flip works",
+                    message: "Only folders you authorize are monitored. Existing files are never scanned for conversions."
+                )
+                Button("Authorize Folders…", systemImage: "folder.badge.plus") {
+                    model.chooseFolders()
+                }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut("+", modifiers: [.command])
+                .accessibilityHint("Opens the macOS folder picker without preselecting a folder")
+                .accessibilityIdentifier(AccessibilityID.onboardingAuthorize)
+            } else {
+                Button(model.state.isMonitoringPaused ? "Resume Monitoring" : "Pause Monitoring", systemImage: model.state.isMonitoringPaused ? "play.fill" : "pause.fill") {
+                    model.toggleMonitoring()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(model.isPerformingAction)
+                .keyboardShortcut("p", modifiers: [.command])
+                .accessibilityHint(model.state.isMonitoringPaused ? "Processes only new rename events after monitoring resumes" : "Stops queuing new conversions; a safe final replacement may finish")
+                .accessibilityIdentifier(AccessibilityID.pauseResume)
+            }
+
+            VStack(alignment: .leading, spacing: AppSpacing.small) {
+                Text("Recent Activity")
+                    .font(.headline)
+                if model.state.recentActivity.isEmpty {
+                    Text("Conversions and actionable failures will appear here.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(model.state.recentActivity) { item in
+                        Button {
+                            model.selectHistory(item.id)
+                            openWindow(id: "history")
+                        } label: {
+                            RecentActivityRow(item: item)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("\(item.fileName), \(item.outcomeText), \(item.sourceFormat) to \(item.targetFormat)")
+                    }
+                }
+            }
+
+            Divider()
+
+            HStack(spacing: AppSpacing.small) {
+                if let recovery = model.state.history.first(where: \.needsRecoveryAction) {
+                    Button("Review Recovery…", systemImage: "cross.case.fill") {
+                        model.selectHistory(recovery.id)
+                        openWindow(id: "history")
+                    }
+                    .accessibilityHint("Opens the unresolved recovery item in Conversion History")
+                }
+                Button("History…", systemImage: "clock.arrow.circlepath") {
+                    openWindow(id: "history")
+                }
+                .keyboardShortcut("h", modifiers: [.command])
+                .accessibilityIdentifier(AccessibilityID.openHistory)
+
+                SettingsLink {
+                    Label("Settings…", systemImage: "gearshape")
+                }
+                .keyboardShortcut(",", modifiers: [.command])
+
+                Spacer()
+
+                Button("Quit") { NSApplication.shared.terminate(nil) }
+                    .keyboardShortcut("q", modifiers: [.command])
+            }
+        }
+        .padding(AppSpacing.large)
+        .frame(width: AppLayout.menuWidth)
+        .animation(reduceMotion ? nil : AppMotion.stateChange, value: model.state.status)
+        .onChange(of: model.historyNavigationRequest) { _, request in
+            guard let request else { return }
+            if let itemID = request.itemID {
+                model.selectHistory(itemID)
+            }
+            openWindow(id: "history")
+            model.completeHistoryNavigation(request)
+        }
+        .overlay {
+            if model.state.isLoading {
+                ProgressView("Loading local state…")
+                    .padding(AppSpacing.large)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppRadius.panel))
+                    .accessibilityIdentifier("status.loading")
+            }
+        }
+        .alert(item: Binding(get: { model.alert }, set: { _ in model.dismissAlert() })) { alert in
+            if let action = alert.action {
+                Alert(
+                    title: Text(alert.title),
+                    message: Text(alert.message),
+                    primaryButton: .default(Text("Reveal in Finder")) {
+                        model.performAlertAction(action)
+                    },
+                    secondaryButton: .cancel { model.dismissAlert() }
+                )
+            } else {
+                Alert(title: Text(alert.title), message: Text(alert.message), dismissButton: .default(Text("OK")))
+            }
+        }
+    }
+}
+
+private struct RecentActivityRow: View {
+    let item: HistoryItemState
+
+    var body: some View {
+        HStack(spacing: AppSpacing.small) {
+            Image(systemName: item.showsSuccessMark ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                .foregroundStyle(item.showsSuccessMark ? AppColor.success : AppColor.warning)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: AppSpacing.xSmall) {
+                Text(item.fileName)
+                    .lineLimit(1)
+                Text("\(item.sourceFormat) → \(item.targetFormat) · \(item.outcomeText)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(item.date, style: .relative)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+struct OnboardingView: View {
+    @Environment(FileConvertViewModel.self) private var model
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xLarge) {
+            Label("Convert by Renaming", systemImage: "arrow.triangle.2.circlepath")
+                .font(.largeTitle.bold())
+            Text("Rename a file’s extension in an authorized folder. File-Flip checks the file’s real format, converts it locally when the pair is available, and keeps a recoverable original.")
+                .font(.title3)
+                .fixedSize(horizontal: false, vertical: true)
+            AppPanel {
+                VStack(alignment: .leading, spacing: AppSpacing.medium) {
+                    Label("Private by design", systemImage: "lock.shield")
+                        .font(.headline)
+                    Text("Files, names, paths, and history stay on this Mac. No folder is selected or watched until you choose it.")
+                    Text("Desktop and Downloads are common choices, but neither is preselected.")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Button("Choose Folders…") { model.chooseFolders() }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .keyboardShortcut(.defaultAction)
+                .accessibilityHint("Opens a system folder picker that allows one or more folders")
+                .accessibilityIdentifier(AccessibilityID.onboardingAuthorize)
+        }
+        .padding(AppSpacing.xxLarge)
+        .frame(width: AppLayout.onboardingWidth)
+    }
+}
+
+struct FileConvertSettingsView: View {
+    @Environment(FileConvertViewModel.self) private var model
+
+    var body: some View {
+        TabView {
+            GeneralSettingsView()
+                .tabItem { Label("General", systemImage: "gearshape") }
+            WatchedFoldersSettingsView()
+                .tabItem { Label("Folders", systemImage: "folder") }
+            PolicySettingsView()
+                .tabItem { Label("Defaults", systemImage: "slider.horizontal.3") }
+            ProviderSettingsView()
+                .tabItem { Label("Formats", systemImage: "square.grid.2x2") }
+            StorageSettingsView()
+                .tabItem { Label("Storage", systemImage: "externaldrive") }
+        }
+        .padding(AppSpacing.large)
+        .frame(minWidth: AppLayout.settingsMinimumWidth, minHeight: AppLayout.settingsMinimumHeight)
+    }
+}
+
+private struct GeneralSettingsView: View {
+    @Environment(FileConvertViewModel.self) private var model
+
+    var body: some View {
+        Form {
+            Section("Monitoring") {
+                LabeledContent("Status") { AppStatusMark(state: model.state.status) }
+                Button(model.state.isMonitoringPaused ? "Resume Monitoring" : "Pause Monitoring") {
+                    model.toggleMonitoring()
+                }
+                .disabled(model.state.folders.isEmpty || model.isPerformingAction)
+            }
+            Section("Login") {
+                Toggle("Launch File-Flip when I log in", isOn: Binding(
+                    get: { model.state.launchAtLogin },
+                    set: { model.setLaunchAtLogin($0) }
+                ))
+                .accessibilityIdentifier("settings.launch-at-login")
+                .toggleStyle(.checkbox)
+                if model.state.launchAtLoginRequiresApproval {
+                    Text("Approval is required in System Settings › General › Login Items.")
+                        .foregroundStyle(AppColor.warning)
+                }
+            }
+        }
+        .formStyle(.grouped)
+    }
+}
+
+private struct WatchedFoldersSettingsView: View {
+    @Environment(FileConvertViewModel.self) private var model
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.large) {
+            HStack {
+                Text("Watched Folders").font(.title2.bold())
+                Spacer()
+                Button("Add Folder…", systemImage: "plus") { model.chooseFolders() }
+                    .accessibilityIdentifier(AccessibilityID.addFolder)
+            }
+            if model.state.folders.isEmpty {
+                AppEmptyState(
+                    systemImage: "folder.badge.plus",
+                    title: "No folders authorized",
+                    message: "Add only the folders where rename-to-convert should be active."
+                )
+            } else {
+                List(model.state.folders) { folder in
+                    HStack(spacing: AppSpacing.medium) {
+                        Image(systemName: folder.needsReauthorization ? "folder.badge.questionmark" : "folder")
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: AppSpacing.xSmall) {
+                            Text(folder.name).font(.headline)
+                            Text(folder.path).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                            Text(folder.statusText)
+                                .font(.caption)
+                                .foregroundStyle(folder.needsReauthorization ? AppColor.warning : Color.secondary)
+                        }
+                        Spacer()
+                        if folder.needsReauthorization {
+                            Button("Reauthorize…") { model.reauthorize(folder) }
+                                .accessibilityLabel("Reauthorize \(folder.name)")
+                        }
+                        Toggle("Monitor \(folder.name)", isOn: Binding(
+                            get: { folder.isEnabled },
+                            set: { model.setFolderEnabled(folder, enabled: $0) }
+                        ))
+                        .labelsHidden()
+                        Button("Remove", systemImage: "minus.circle") { model.removeFolder(folder) }
+                            .labelStyle(.iconOnly)
+                            .accessibilityLabel("Remove \(folder.name) from watched folders")
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct PolicySettingsView: View {
+    @Environment(FileConvertViewModel.self) private var model
+
+    var body: some View {
+        Form {
+            Text("Changes apply only to conversions requested after you save them. A conversion already running keeps the policy captured when it began.")
+                .foregroundStyle(.secondary)
+            Section("Conversion result") {
+                Picker("After conversion", selection: conversionBehavior) {
+                    Text("Keep original and create converted copy").tag(ConversionBehavior.keepOriginal)
+                    Text("Replace file and keep recoverable backup").tag(ConversionBehavior.replaceWithBackup)
+                }
+                .accessibilityIdentifier("settings.conversion-behavior")
+                Text(model.state.defaults.conversionBehavior == .keepOriginal
+                     ? "Keeps two visible files: the exact original under its original extension and the converted result under the renamed extension. Both use disk space."
+                     : "Keeps one visible converted file. The exact original remains in private backup storage until the configured retention limits remove it.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Section("Images") {
+                LabeledContent("Quality") {
+                    Slider(value: imageQuality, in: 0.5 ... 1, step: 0.05)
+                        .frame(width: AppLayout.sliderWidth)
+                        .accessibilityValue("\(Int(model.state.defaults.image.quality * 100)) percent")
+                        .accessibilityIdentifier("defaults.image.quality")
+                }
+                Picker("Multiple frames", selection: imageFrames) {
+                    Text("Ask before converting").tag(ImageFrameChoice.ask)
+                    Text("Use first frame").tag(ImageFrameChoice.first)
+                    Text("Preserve all when supported").tag(ImageFrameChoice.all)
+                }
+                .accessibilityIdentifier("defaults.image.frames")
+                Picker("Transparency when target cannot preserve it", selection: imageBackground) {
+                    Text("Ask before converting").tag(UInt32?.none)
+                    Text("White background").tag(UInt32?.some(0xFFFF_FFFF))
+                    Text("Black background").tag(UInt32?.some(0xFF00_0000))
+                }
+                Picker("Metadata", selection: imageMetadata) {
+                    Text("Preserve").tag(MetadataMode.preserve)
+                    Text("Remove").tag(MetadataMode.strip)
+                }
+                Picker("Orientation", selection: imageOrientation) {
+                    Text("Normalize pixels").tag(ImageOrientationMode.normalizePixels)
+                    Text("Preserve orientation tag").tag(ImageOrientationMode.preserveTag)
+                }
+                .accessibilityIdentifier("defaults.image.orientation")
+                Picker("Color profile", selection: imageColorProfile) {
+                    Text("Preserve").tag(ImageColorProfileMode.preserve)
+                    Text("Convert to sRGB").tag(ImageColorProfileMode.convertToSRGB)
+                    Text("Remove").tag(ImageColorProfileMode.strip)
+                }
+                .accessibilityIdentifier("defaults.image.color-profile")
+            }
+            Section("Audio and Video") {
+                Picker("Audio bitrate", selection: audioBitrate) {
+                    Text("Compatibility default").tag(Int?.none)
+                    Text("128 kbps").tag(Int?.some(128_000))
+                    Text("256 kbps").tag(Int?.some(256_000))
+                }
+                .accessibilityIdentifier("defaults.audio.bitrate")
+                Picker("Audio sample rate", selection: audioSampleRate) {
+                    Text("Compatibility default").tag(Int?.none)
+                    Text("44.1 kHz").tag(Int?.some(44_100))
+                    Text("48 kHz").tag(Int?.some(48_000))
+                }
+                .accessibilityIdentifier("defaults.audio.sample-rate")
+                Picker("Audio track", selection: audioTrack) {
+                    Text("Ask when ambiguous").tag(Int?.none)
+                    Text("First track").tag(Int?.some(0))
+                }
+                Stepper("Video quality: \(model.state.defaults.video.quality)", value: videoQuality, in: 0 ... 51)
+                .accessibilityIdentifier("defaults.video.quality")
+                Picker("Video audio track", selection: videoAudioTrack) {
+                    Text("Ask when ambiguous").tag(Int?.none)
+                    Text("First track").tag(Int?.some(0))
+                }
+                Picker("Video subtitle track", selection: videoSubtitleTrack) {
+                    Text("Ask when ambiguous").tag(Int?.none)
+                    Text("First track").tag(Int?.some(0))
+                }
+                .accessibilityIdentifier("defaults.video.subtitle-track")
+                Text("Lower video quality values preserve more detail and use more space.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section("Documents") {
+                Toggle("Allow conversions with disclosed layout or feature loss", isOn: documentLoss)
+                    .accessibilityIdentifier("defaults.document.loss")
+                Picker("Page selection", selection: documentPage) {
+                    Text("Ask for multi-page sources").tag(Int?.none)
+                    Text("First page").tag(Int?.some(0))
+                }
+                LabeledContent("Rendered image quality") {
+                    Slider(value: documentImageQuality, in: 0.5 ... 1, step: 0.05)
+                        .frame(width: AppLayout.sliderWidth)
+                        .accessibilityValue("\(Int(model.state.defaults.document.imageQuality * 100)) percent")
+                        .accessibilityIdentifier("defaults.document.image-quality")
+                }
+            }
+            Section("Spreadsheets") {
+                Picker("Worksheet", selection: spreadsheetSheet) {
+                    Text("Ask for multi-sheet workbooks").tag(Int?.none)
+                    Text("First worksheet").tag(Int?.some(0))
+                }
+                Picker("CSV delimiter", selection: spreadsheetDelimiter) {
+                    Text("Comma").tag(",")
+                    Text("Tab").tag("\t")
+                    Text("Semicolon").tag(";")
+                }
+                Toggle("Export formula results instead of formulas", isOn: spreadsheetValues)
+                    .accessibilityIdentifier("defaults.spreadsheet.formula-values")
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private var conversionBehavior: Binding<ConversionBehavior> { binding(\.conversionBehavior) }
+    private var imageQuality: Binding<Double> { binding(\.image.quality) }
+    private var imageFrames: Binding<ImageFrameChoice> { binding(\.image.frames) }
+    private var imageBackground: Binding<UInt32?> { binding(\.image.alphaBackgroundARGB) }
+    private var imageMetadata: Binding<MetadataMode> { binding(\.image.metadata) }
+    private var imageOrientation: Binding<ImageOrientationMode> { binding(\.image.orientation) }
+    private var imageColorProfile: Binding<ImageColorProfileMode> { binding(\.image.colorProfile) }
+    private var audioBitrate: Binding<Int?> { binding(\.audio.bitrate) }
+    private var audioSampleRate: Binding<Int?> { binding(\.audio.sampleRate) }
+    private var audioTrack: Binding<Int?> { binding(\.audio.trackIndex) }
+    private var videoQuality: Binding<Int> { binding(\.video.quality) }
+    private var videoAudioTrack: Binding<Int?> { binding(\.video.audioTrack) }
+    private var videoSubtitleTrack: Binding<Int?> { binding(\.video.subtitleTrack) }
+    private var documentLoss: Binding<Bool> { binding(\.document.acceptsFidelityLoss) }
+    private var documentPage: Binding<Int?> { binding(\.document.pageIndex) }
+    private var documentImageQuality: Binding<Double> { binding(\.document.imageQuality) }
+    private var spreadsheetDelimiter: Binding<String> { binding(\.spreadsheet.delimiter) }
+    private var spreadsheetSheet: Binding<Int?> { binding(\.spreadsheet.sheetIndex) }
+    private var spreadsheetValues: Binding<Bool> { binding(\.spreadsheet.formulaValuesOnly) }
+
+    private func binding<Value>(_ keyPath: WritableKeyPath<FutureJobDefaults, Value>) -> Binding<Value> {
+        Binding(
+            get: { model.state.defaults[keyPath: keyPath] },
+            set: { value in
+                var defaults = model.state.defaults
+                defaults[keyPath: keyPath] = value
+                model.updateDefaults(defaults)
+            }
+        )
+    }
+}
+
+private struct ProviderSettingsView: View {
+    @Environment(FileConvertViewModel.self) private var model
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.large) {
+            Text("Available Formats").font(.title2.bold())
+            Text("Only independently certified source-to-target pairs are shown. An unavailable provider never causes FileFlip to rename bytes without converting them.")
+                .foregroundStyle(.secondary)
+            if model.state.providers.isEmpty {
+                AppEmptyState(
+                    systemImage: "exclamationmark.triangle",
+                    title: "No certified providers available",
+                    message: "Conversions remain disabled until a verified local provider is available."
+                )
+            } else {
+                List(model.state.providers, id: \ProviderState.id) { (provider: ProviderState) in
+                    DisclosureGroup {
+                        if provider.pairs.isEmpty {
+                            Text("No conversion pairs are currently available.")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(provider.pairs, id: \.self) { pair in Text(pair) }
+                        }
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: AppSpacing.xSmall) {
+                                Text(provider.name).font(.headline)
+                                Text(provider.detail)
+                                    .font(.caption)
+                                    .foregroundStyle(provider.isAvailable ? Color.secondary : AppColor.warning)
+                            }
+                            Spacer()
+                            Image(systemName: provider.isAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundStyle(provider.isAvailable ? AppColor.success : AppColor.warning)
+                                .accessibilityHidden(true)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("\(provider.name), \(provider.detail)")
+                        .accessibilityIdentifier("provider.\(provider.id)")
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct StorageSettingsView: View {
+    @Environment(FileConvertViewModel.self) private var model
+
+    var body: some View {
+        Form {
+            Section("Recoverable Originals") {
+                LabeledContent("Backup usage", value: model.state.backup.usageText)
+                Picker("Retain backups", selection: Binding(
+                    get: { model.state.backup.retentionDays },
+                    set: { model.updateRetention(days: $0) }
+                )) {
+                    Text("7 days").tag(7)
+                    Text("30 days").tag(30)
+                    Text("90 days").tag(90)
+                }
+                Picker("Maximum storage", selection: Binding(
+                    get: { model.state.backup.limitBytes },
+                    set: { model.updateRetention(byteLimit: $0) }
+                )) {
+                    Text("5 GB").tag(UInt64(5 << 30))
+                    Text("10 GB").tag(UInt64(10 << 30))
+                    Text("25 GB").tag(UInt64(25 << 30))
+                }
+                Text("Pruning removes only retained backups. It never removes the only user-visible file.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section("Privacy") {
+                Label("All conversions and history stay on this Mac", systemImage: "lock.shield")
+                Text("File-Flip does not send file names, paths, contents, history, or usage events to an external service.")
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+    }
+}
+
+struct HistoryView: View {
+    @Environment(FileConvertViewModel.self) private var model
+    @State private var confirmsClear = false
+
+    private var selectedItem: HistoryItemState? {
+        model.state.history.first { $0.id == model.state.selectedHistoryID } ?? model.state.history.first
+    }
+
+    var body: some View {
+        NavigationSplitView {
+            VStack(spacing: 0) {
+                if model.state.history.isEmpty {
+                    AppEmptyState(
+                        systemImage: "clock.arrow.circlepath",
+                        title: "No conversion history",
+                        message: "Successful conversions and failures that begin work will appear here."
+                    )
+                    .padding(AppSpacing.large)
+                } else {
+                    List(model.state.history, selection: Binding(
+                        get: { model.state.selectedHistoryID },
+                        set: { model.selectHistory($0) }
+                    )) { item in
+                        HistoryRow(item: item)
+                            .tag(item.id)
+                            .accessibilityIdentifier("history.item.\(item.id.uuidString)")
+                    }
+                }
+                Divider()
+                Button("Clear History…", systemImage: "trash") { confirmsClear = true }
+                    .disabled(model.state.history.isEmpty || model.isPerformingAction)
+                    .padding(AppSpacing.medium)
+                    .accessibilityIdentifier(AccessibilityID.historyClear)
+            }
+            .navigationSplitViewColumnWidth(
+                min: AppLayout.historySidebarMinimumWidth,
+                ideal: AppLayout.historySidebarIdealWidth
+            )
+        } detail: {
+            if let selectedItem {
+                HistoryDetailView(item: selectedItem)
+            } else {
+                AppEmptyState(
+                    systemImage: "doc.text.magnifyingglass",
+                    title: "Select an activity",
+                    message: "Choose a conversion to inspect its outcome, provider, warnings, and recovery options."
+                )
+                .padding(AppSpacing.xLarge)
+            }
+        }
+        .frame(minWidth: AppLayout.historyMinimumWidth, minHeight: AppLayout.historyMinimumHeight)
+        .confirmationDialog(
+            "Clear conversion history?",
+            isPresented: $confirmsClear,
+            titleVisibility: .visible
+        ) {
+            Button("Clear History and Delete Backups", role: .destructive) { model.clearHistory() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Completed and resolved history and its associated backups will be deleted. Unresolved recovery items and retained recovery data remain protected. User-visible files are not deleted.")
+        }
+        .sheet(item: Binding(
+            get: { model.undoConflict },
+            set: { if $0 == nil { model.dismissUndoConflict() } }
+        )) { item in
+            UndoConflictView(item: item)
+        }
+        .alert(item: Binding(get: { model.alert }, set: { _ in model.dismissAlert() })) { alert in
+            if let action = alert.action {
+                Alert(
+                    title: Text(alert.title),
+                    message: Text(alert.message),
+                    primaryButton: .default(Text("Reveal in Finder")) {
+                        model.performAlertAction(action)
+                    },
+                    secondaryButton: .cancel { model.dismissAlert() }
+                )
+            } else {
+                Alert(title: Text(alert.title), message: Text(alert.message), dismissButton: .default(Text("OK")))
+            }
+        }
+    }
+}
+
+private struct HistoryRow: View {
+    let item: HistoryItemState
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xSmall) {
+            HStack {
+                Text(item.fileName).font(.headline).lineLimit(1)
+                Spacer()
+                Image(systemName: item.showsSuccessMark ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                    .foregroundStyle(item.showsSuccessMark ? AppColor.success : AppColor.warning)
+                    .accessibilityHidden(true)
+            }
+            Text("\(item.sourceFormat) → \(item.targetFormat) · \(item.outcomeText)")
+                .font(.caption).foregroundStyle(.secondary)
+            Text(item.behaviorText)
+                .font(.caption2).foregroundStyle(.secondary)
+            Text(item.date, style: .relative)
+                .font(.caption2).foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.fileName), \(item.outcomeText), \(item.sourceFormat) to \(item.targetFormat)")
+    }
+}
+
+private struct HistoryDetailView: View {
+    @Environment(FileConvertViewModel.self) private var model
+    let item: HistoryItemState
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppSpacing.xLarge) {
+                VStack(alignment: .leading, spacing: AppSpacing.small) {
+                    Text(item.fileName).font(.title2.bold())
+                    Text("\(item.sourceFormat) → \(item.targetFormat)")
+                        .font(.title3).foregroundStyle(.secondary)
+                    Label(item.outcomeText, systemImage: item.showsSuccessMark ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                        .foregroundStyle(item.showsSuccessMark ? AppColor.success : AppColor.warning)
+                }
+                AppPanel {
+                    Grid(alignment: .leading, horizontalSpacing: AppSpacing.large, verticalSpacing: AppSpacing.small) {
+                        GridRow { Text("Date").foregroundStyle(.secondary); Text(item.date.formatted(date: .abbreviated, time: .shortened)) }
+                        GridRow { Text("Provider").foregroundStyle(.secondary); Text(providerText) }
+                        GridRow { Text("File access").foregroundStyle(.secondary); Text(availabilityText) }
+                        GridRow { Text("Result").foregroundStyle(.secondary); Text(item.behaviorText) }
+                        if let recoveryDetailText {
+                            GridRow { Text("Recovery").foregroundStyle(.secondary); Text(recoveryDetailText) }
+                        }
+
+                    }
+                }
+                if let warning = item.fidelityWarning {
+                    Label(warning, systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(AppColor.warning)
+                        .accessibilityLabel("Fidelity warning: \(warning)")
+                }
+                if let error = item.errorSummary {
+                    VStack(alignment: .leading, spacing: AppSpacing.small) {
+                        Text("What happened").font(.headline)
+                        Text(error)
+                        Text("Safe next step").font(.headline)
+                        Text(safeNextAction)
+                        Text("File-Flip does not display provider output that could contain private paths or document content.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                if item.needsRecoveryAction {
+                    AppPanel {
+                        VStack(alignment: .leading, spacing: AppSpacing.medium) {
+                            Text("Recovery options").font(.headline)
+                            Text("The current file will remain unchanged. Restore the retained original as a separate file at a destination you choose.")
+                            if item.canRestoreRetainedFile {
+                                Button("Restore Retained File…", systemImage: "arrow.down.doc") {
+                                    model.restoreRecovery(item)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .disabled(model.isPerformingAction)
+                                .accessibilityHint("Creates a separate recovered copy without changing the current file")
+                                .accessibilityIdentifier(AccessibilityID.historyRestoreRecovery)
+                            } else {
+                                Label("Recovery data unavailable", systemImage: "exclamationmark.triangle.fill")
+                                    .foregroundStyle(AppColor.warning)
+                            }
+                            Button("Mark as Resolved…") {
+                                model.acknowledgeRecovery(item)
+                            }
+                            .disabled(model.isPerformingAction)
+                            .accessibilityHint("Records manual resolution without restoring a file and allows normal retention cleanup")
+                            .accessibilityIdentifier(AccessibilityID.historyResolveRecovery)
+                        }
+                    }
+                }
+                if item.canUndo {
+                    Button("Undo Conversion", systemImage: "arrow.uturn.backward") { model.undo(item) }
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut("z", modifiers: [.command])
+                        .disabled(model.isPerformingAction)
+                        .accessibilityHint(item.conversionBehavior == .keepOriginal ? "Removes the unchanged converted copy only if both visible files still match" : "Restores the exact retained original only if the converted file has not changed")
+                        .accessibilityIdentifier(AccessibilityID.historyUndo)
+                } else if item.outcome == .succeeded {
+                    Text(item.conversionBehavior == .keepOriginal
+                         ? "Undo is unavailable because one or both visible files changed or cannot be accessed."
+                         : "Undo is unavailable because the file or its retained original cannot be accessed.")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(AppSpacing.xLarge)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityIdentifier("history.detail-scroll")
+    }
+
+    private var safeNextAction: String {
+        switch item.recoveryState {
+        case .unresolved(artifact: .available):
+            return "Restore the retained original to a separate file, or mark recovery as resolved after handling it manually."
+        case .unresolved(artifact: .unavailable):
+            return "Keep the item unresolved while investigating, or mark it as resolved if recovery was completed another way."
+        case .resolvedByRestore, .resolvedManually:
+            return "No further recovery action is required."
+        case .notApplicable:
+            break
+        }
+        guard let error = item.errorSummary else { return "" }
+        if error.contains("fidelity policy") {
+            return "Open Settings › Defaults, choose the required policy, then rename the file again."
+        }
+        if error.contains("provider") {
+            return "Review Formats in Settings. Install or repair the local provider before renaming the file again."
+        }
+        if error.contains("permission") {
+            return "Reauthorize the watched folder in Settings before renaming the file again."
+        }
+        return "Keep the preserved original, resolve the reported issue, then rename the file again."
+    }
+
+    private var recoveryDetailText: String? {
+        switch item.recoveryState {
+        case .notApplicable: nil
+        case .unresolved(artifact: .available): "Retained file available"
+        case .unresolved(artifact: .unavailable): "Recovery data unavailable"
+        case let .resolvedByRestore(filename, date):
+            "Recovered as \(filename) · \(date.formatted(date: .abbreviated, time: .shortened))"
+        case let .resolvedManually(date):
+            "Resolved manually · \(date.formatted(date: .abbreviated, time: .shortened))"
+        }
+    }
+
+    private var providerText: String {
+        [item.providerName, item.providerVersion].compactMap { $0 }.joined(separator: " · ").nonempty ?? "Not recorded"
+    }
+
+    private var availabilityText: String {
+        switch item.availability {
+        case .available: "Available"
+        case .unavailable: "Unavailable"
+        case .undoConflict: "Changed after conversion"
+        }
+    }
+}
+
+private struct UndoConflictView: View {
+    @Environment(FileConvertViewModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    let item: HistoryItemState
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.large) {
+            Label(item.conversionBehavior == .keepOriginal ? "A Visible File Has Changed" : "The Current File Has Changed", systemImage: "exclamationmark.triangle.fill")
+                .font(.title2.bold()).foregroundStyle(AppColor.warning)
+            Text(item.conversionBehavior == .keepOriginal
+                 ? "File-Flip will not remove the converted copy because one or both visible files no longer match the completed conversion. Review both files manually."
+                 : "File-Flip will not overwrite the changed file. Restore the retained original under a new name to keep both versions.")
+                .fixedSize(horizontal: false, vertical: true)
+            HStack {
+                Button(item.conversionBehavior == .keepOriginal ? "Close" : "Cancel") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Spacer()
+                if item.conversionBehavior == .replaceWithBackup {
+                    Button("Restore Original as New File…") { model.restoreConflictToNewFile(item) }
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut(.defaultAction)
+                        .accessibilityIdentifier(AccessibilityID.historyKeepBoth)
+                }
+            }
+        }
+        .padding(AppSpacing.xLarge)
+        .frame(width: AppLayout.dialogWidth)
+    }
+}
+
+private extension String {
+    var nonempty: String? { isEmpty ? nil : self }
+}

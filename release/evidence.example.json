@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "revision": "REPLACE_WITH_RELEASE_REVISION",
+  "recordedAt": "2026-07-29T00:00:00Z",
+  "suiteRuns": [],
+  "thresholds": {},
+  "release": {},
+  "smokeMatrix": [],
+  "packagedMedia": {
+    "matrixReport": {
+      "status": "not-recorded",
+      "command": [
+        "swift",
+        "run",
+        "packaged-media-matrix",
+        "--app",
+        "/absolute/path/to/FileFlip.app",
+        "--fixtures",
+        "/absolute/repository/Tests/Fixtures/Media/manifest.json",
+        "--report",
+        "/absolute/path/to/media-matrix.json"
+      ],
+      "observedAt": "2026-07-29T00:00:00Z",
+      "revision": "REPLACE_WITH_RELEASE_REVISION",
+      "artifact": "/absolute/path/to/media-matrix.json"
+    },
+    "installationSmoke": {
+      "status": "not-recorded",
+      "command": [
+        "scripts/smoke-installed-media.sh",
+        "/absolute/path/to/FileFlip.app",
+        "/absolute/repository/Tests/Fixtures/Media/manifest.json"
+      ],
+      "observedAt": "2026-07-29T00:00:00Z",
+      "revision": "REPLACE_WITH_RELEASE_REVISION",
+      "artifact": "/absolute/path/to/installation-smoke.log"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertEvidenceTests.build/primary.swiftdeps"
+  },
+  "/Users/chase.putnam/repo/file-flip/Tests/FileConvertEvidenceTests/EvidenceModelsTests.swift": {
+    "dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertEvidenceTests.build/EvidenceModelsTests.d",
+    "object": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertEvidenceTests.build/EvidenceModelsTests.swift.o",
+    "swiftmodule": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertEvidenceTests.build/EvidenceModelsTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertEvidenceTests.build/EvidenceModelsTests.swiftdeps",
+    "diagnostics": "/Users/chase.putnam/repo/file-flip/.build/arm64-apple-macosx/debug/FileConvertEvidenceTests.build/EvidenceModelsTests.dia"
+  }
+}

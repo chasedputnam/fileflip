@@ -1,0 +1,418 @@
+{
+  "fixtures": [
+    {
+      "byteLength": 16916,
+      "canonicalExtension": "mp3",
+      "facts": {
+        "durationMilliseconds": 1000,
+        "formatNames": [
+          "mp3"
+        ],
+        "majorBrand": null,
+        "streams": [
+          {
+            "channels": 1,
+            "codec": "mp3",
+            "frameCount": 43,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "audio",
+      "format": "mp3",
+      "id": "audio-mp3",
+      "license": "CC0-1.0",
+      "path": "audio/source.mp3",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "94f34896e4e0adce53ce6cafa4c5583cc6d42d797f048936c04ec904f6c325a9"
+    },
+    {
+      "byteLength": 16587,
+      "canonicalExtension": "m4a",
+      "facts": {
+        "durationMilliseconds": 1000,
+        "formatNames": [
+          "3g2",
+          "3gp",
+          "m4a",
+          "mj2",
+          "mov",
+          "mp4"
+        ],
+        "majorBrand": "M4A ",
+        "streams": [
+          {
+            "channels": 1,
+            "codec": "aac",
+            "frameCount": 47,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "audio",
+      "format": "m4a",
+      "id": "audio-m4a",
+      "license": "CC0-1.0",
+      "path": "audio/source.m4a",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "926e537e078253dccdc17e8d5aa2315938d8bae26876b215060a2f77efa4ee81"
+    },
+    {
+      "byteLength": 15961,
+      "canonicalExtension": "aac",
+      "facts": {
+        "durationMilliseconds": 1024,
+        "formatNames": [
+          "aac"
+        ],
+        "majorBrand": null,
+        "streams": [
+          {
+            "channels": 1,
+            "codec": "aac",
+            "frameCount": 48,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "audio",
+      "format": "aac",
+      "id": "audio-aac",
+      "license": "CC0-1.0",
+      "path": "audio/source.aac",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "c9cabe4a46ee55ca3ba2acd910192040dcbf45ab6920cfcde00030e040499ce6"
+    },
+    {
+      "byteLength": 96044,
+      "canonicalExtension": "wav",
+      "facts": {
+        "durationMilliseconds": 1000,
+        "formatNames": [
+          "wav"
+        ],
+        "majorBrand": null,
+        "streams": [
+          {
+            "channels": 1,
+            "codec": "pcm_s16le",
+            "frameCount": 12,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "audio",
+      "format": "wav",
+      "id": "audio-wav",
+      "license": "CC0-1.0",
+      "path": "audio/source.wav",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "0d26f5e167a49aa271edbcc06548a1870af09a66fe888d97d31ffbab1d7ee99d"
+    },
+    {
+      "byteLength": 96054,
+      "canonicalExtension": "aiff",
+      "facts": {
+        "durationMilliseconds": 1000,
+        "formatNames": [
+          "aiff"
+        ],
+        "majorBrand": null,
+        "streams": [
+          {
+            "channels": 1,
+            "codec": "pcm_s16be",
+            "frameCount": 24,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "audio",
+      "format": "aiff",
+      "id": "audio-aiff",
+      "license": "CC0-1.0",
+      "path": "audio/source.aiff",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "9a092eda923d0db5fb061cd9d48956713acf6b12409efef9f0e1d2eaa5ac369e"
+    },
+    {
+      "byteLength": 22361,
+      "canonicalExtension": "flac",
+      "facts": {
+        "durationMilliseconds": 1000,
+        "formatNames": [
+          "flac"
+        ],
+        "majorBrand": null,
+        "streams": [
+          {
+            "channels": 1,
+            "codec": "flac",
+            "frameCount": 11,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "audio",
+      "format": "flac",
+      "id": "audio-flac",
+      "license": "CC0-1.0",
+      "path": "audio/source.flac",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "c5d2366d39a22e9b874ad22d72fbf3295c614cfd125d1f2a6c4584257f358d15"
+    },
+    {
+      "byteLength": 5611,
+      "canonicalExtension": "ogg",
+      "facts": {
+        "durationMilliseconds": 1000,
+        "formatNames": [
+          "ogg"
+        ],
+        "majorBrand": null,
+        "streams": [
+          {
+            "channels": 1,
+            "codec": "vorbis",
+            "frameCount": 48,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "audio",
+      "format": "ogg",
+      "id": "audio-ogg",
+      "license": "CC0-1.0",
+      "path": "audio/source.ogg",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "10c807f82bb7ecd9c3220c415a3d66ba3e0c14067c4588125cd950e00346fcb6"
+    },
+    {
+      "byteLength": 16031,
+      "canonicalExtension": "opus",
+      "facts": {
+        "durationMilliseconds": 1007,
+        "formatNames": [
+          "ogg"
+        ],
+        "majorBrand": null,
+        "streams": [
+          {
+            "channels": 1,
+            "codec": "opus",
+            "frameCount": 51,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "audio",
+      "format": "opus",
+      "id": "audio-opus",
+      "license": "CC0-1.0",
+      "path": "audio/source.opus",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "3acfa6d4095f5bb6cfcf26897f818188fac40e71d238a250d6dc2123651f80e2"
+    },
+    {
+      "byteLength": 60763,
+      "canonicalExtension": "mp4",
+      "facts": {
+        "durationMilliseconds": 1000,
+        "formatNames": [
+          "3g2",
+          "3gp",
+          "m4a",
+          "mj2",
+          "mov",
+          "mp4"
+        ],
+        "majorBrand": "isom",
+        "streams": [
+          {
+            "codec": "mpeg4",
+            "frameCount": 24,
+            "height": 90,
+            "kind": "video",
+            "width": 160
+          },
+          {
+            "channels": 1,
+            "codec": "aac",
+            "frameCount": 47,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "video",
+      "format": "mp4",
+      "id": "video-mp4",
+      "license": "CC0-1.0",
+      "path": "video/source.mp4",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "5df936db6cfe17221107f654f583d1cdac2953e1e6f2e158bea9f532aa376230"
+    },
+    {
+      "byteLength": 60763,
+      "canonicalExtension": "m4v",
+      "facts": {
+        "durationMilliseconds": 1000,
+        "formatNames": [
+          "3g2",
+          "3gp",
+          "m4a",
+          "mj2",
+          "mov",
+          "mp4"
+        ],
+        "majorBrand": "isom",
+        "streams": [
+          {
+            "codec": "mpeg4",
+            "frameCount": 24,
+            "height": 90,
+            "kind": "video",
+            "width": 160
+          },
+          {
+            "channels": 1,
+            "codec": "aac",
+            "frameCount": 47,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "video",
+      "format": "m4v",
+      "id": "video-m4v",
+      "license": "CC0-1.0",
+      "path": "video/source.m4v",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "5df936db6cfe17221107f654f583d1cdac2953e1e6f2e158bea9f532aa376230"
+    },
+    {
+      "byteLength": 60822,
+      "canonicalExtension": "mov",
+      "facts": {
+        "durationMilliseconds": 1000,
+        "formatNames": [
+          "3g2",
+          "3gp",
+          "m4a",
+          "mj2",
+          "mov",
+          "mp4"
+        ],
+        "majorBrand": "qt  ",
+        "streams": [
+          {
+            "codec": "mpeg4",
+            "frameCount": 24,
+            "height": 90,
+            "kind": "video",
+            "width": 160
+          },
+          {
+            "channels": 1,
+            "codec": "aac",
+            "frameCount": 47,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "video",
+      "format": "mov",
+      "id": "video-mov",
+      "license": "CC0-1.0",
+      "path": "video/source.mov",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "91e59b47f8e41b684fb77ccd7fbb86456f27b5a5c123966db0c7988f12df92fd"
+    },
+    {
+      "byteLength": 60070,
+      "canonicalExtension": "mkv",
+      "facts": {
+        "durationMilliseconds": 1021,
+        "formatNames": [
+          "matroska",
+          "webm"
+        ],
+        "majorBrand": null,
+        "streams": [
+          {
+            "codec": "mpeg4",
+            "frameCount": 24,
+            "height": 90,
+            "kind": "video",
+            "width": 160
+          },
+          {
+            "channels": 1,
+            "codec": "aac",
+            "frameCount": 47,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "video",
+      "format": "mkv",
+      "id": "video-mkv",
+      "license": "CC0-1.0",
+      "path": "video/source.mkv",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "faa02c7d892bf4afd32c583736c630711754a70675ea2220a7600a4ec46311ee"
+    },
+    {
+      "byteLength": 33325,
+      "canonicalExtension": "webm",
+      "facts": {
+        "durationMilliseconds": 1008,
+        "formatNames": [
+          "matroska",
+          "webm"
+        ],
+        "majorBrand": null,
+        "streams": [
+          {
+            "codec": "vp9",
+            "frameCount": 24,
+            "height": 90,
+            "kind": "video",
+            "width": 160
+          },
+          {
+            "channels": 1,
+            "codec": "opus",
+            "frameCount": 51,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ]
+      },
+      "family": "video",
+      "format": "webm",
+      "id": "video-webm",
+      "license": "CC0-1.0",
+      "path": "video/source.webm",
+      "provenance": "FileFlip deterministic synthetic media recipe v1",
+      "sha256": "2dc87f13e308e4dd6066c980793b37be48508b94725da9f473325eecc3219f2b"
+    }
+  ],
+  "generator": {
+    "ffmpegVersion": "8.1.2",
+    "manifestSHA256": "322978321b9b1042bd15c48bdbf324ebc58bb64b2a7485c21c2174d6221591d1"
+  },
+  "recipeVersion": 1,
+  "schemaVersion": 1
+}
