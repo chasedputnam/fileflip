@@ -43,15 +43,13 @@ enum MenuBarState: String, CaseIterable, Sendable {
 
     var systemImage: String {
         switch self {
-        case .idle: "arrow.triangle.2.circlepath"
-        case .monitoring: "checkmark.circle.fill"
+        case .idle, .monitoring: "checkmark.seal.text.page"
         case .converting: "arrow.triangle.2.circlepath.circle.fill"
         case .paused: "pause.circle.fill"
-        case .conversionFailed: "exclamationmark.circle.fill"
-        case .needsChoice: "questionmark.circle.fill"
-        case .degraded: "exclamationmark.circle.fill"
+        case .conversionFailed, .degraded: "exclamationmark.triangle.text.page"
+        case .needsChoice: "questionmark.text.page"
         case .blocked: "xmark.octagon.fill"
-        case .needsRecovery: "cross.case.fill"
+        case .needsRecovery: "waveform.path.ecg.text.page"
         }
     }
 }
@@ -102,6 +100,22 @@ struct ProviderState: Identifiable, Hashable, Sendable {
     }
 }
 
+func formattedConversionDuration(_ duration: TimeInterval) -> String {
+    let nonnegativeDuration = max(0, duration)
+    if nonnegativeDuration < 1 {
+        let milliseconds = min(999, Int((nonnegativeDuration * 1_000).rounded()))
+        return "\(milliseconds)ms"
+    }
+    let totalSeconds = Int(nonnegativeDuration.rounded())
+    if totalSeconds < 60 {
+        return "\(totalSeconds)s"
+    }
+    if totalSeconds < 3_600 {
+        return "\(totalSeconds / 60)m \(totalSeconds % 60)s"
+    }
+    return "\(totalSeconds / 3_600)h \((totalSeconds % 3_600) / 60)m"
+}
+
 struct HistoryItemState: Identifiable, Sendable {
     enum Availability: Hashable, Sendable {
         case available
@@ -148,6 +162,10 @@ struct HistoryItemState: Identifiable, Sendable {
     var recoveryState: RecoveryState = .notApplicable
     var recoverySuggestedDirectory: URL? = nil
     var recoveryOriginalFilename: String? = nil
+
+    var conversionDurationText: String? {
+        conversionDuration.map(formattedConversionDuration)
+    }
 
     var outcomeText: String {
         switch recoveryState {

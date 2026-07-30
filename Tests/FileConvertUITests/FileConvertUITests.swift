@@ -44,11 +44,19 @@ final class FileConvertUITests: XCTestCase {
         openMenuBarExtra()
 
         XCTAssertTrue(statusSummary.waitForExistence(timeout: 2))
-        XCTAssertTrue(buttonContaining("photo.png").waitForExistence(timeout: 2))
+        let recentActivity = buttonContaining("photo.png")
+        XCTAssertTrue(recentActivity.waitForExistence(timeout: 2))
+        XCTAssertEqual(recentActivity.value as? String, "0ms")
+        Thread.sleep(forTimeInterval: 2)
+        XCTAssertEqual(recentActivity.value as? String, "0ms")
+
         application.buttons["history.open"].click()
+        XCTAssertTrue(application.wait(for: .runningForeground, timeout: 2))
         XCTAssertTrue(application.buttons["history.clear"].waitForExistence(timeout: 2))
+        XCTAssertTrue(application.descendants(matching: .outlineRow).firstMatch.isSelected)
         XCTAssertTrue(application.staticTexts["photo.png"].exists)
         XCTAssertTrue(textContaining("Converted").exists)
+        XCTAssertTrue(application.staticTexts["0ms"].exists)
     }
 
     func testFailedLiveConversionRestoresOriginalNameAndSetsFailureStatus() throws {
@@ -370,8 +378,10 @@ final class FileConvertUITests: XCTestCase {
     func testLaunchAndTypedFutureJobDefaultsAreAvailableInSettings() {
         launch(scenario: "successful")
         openMenuBarExtra()
-        application.buttons["Settings…"].click()
+        application.buttons["Settings"].click()
+        XCTAssertTrue(application.wait(for: .runningForeground, timeout: 2))
         XCTAssertTrue(application.buttons["General"].waitForExistence(timeout: 2))
+        XCTAssertEqual(application.windows["com_apple_SwiftUI_Settings_window"].title, "General")
         application.buttons["General"].click()
         XCTAssertTrue(application.checkBoxes["settings.launch-at-login"].exists)
 
@@ -525,7 +535,7 @@ final class FileConvertUITests: XCTestCase {
 
         application.buttons["history.clear"].click()
         XCTAssertTrue(application.staticTexts["Clear conversion history?"].waitForExistence(timeout: 2))
-        XCTAssertTrue(textContaining("can no longer be undone").exists)
+        XCTAssertTrue(textContaining("Unresolved recovery items and retained recovery data remain protected").exists)
         application.sheets.buttons["Clear History and Delete Backups"].click()
         XCTAssertTrue(textContaining("No conversion history").waitForExistence(timeout: 2))
     }

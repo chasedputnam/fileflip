@@ -22,6 +22,7 @@ private enum AccessibilityID {
 struct MenuBarContentView: View {
     @Environment(FileConvertViewModel.self) private var model
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
@@ -47,12 +48,13 @@ struct MenuBarContentView: View {
                     ForEach(model.state.recentActivity) { item in
                         Button {
                             model.selectHistory(item.id)
-                            openWindow(id: "history")
+                            openHistory()
                         } label: {
                             RecentActivityRow(item: item)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("\(item.fileName), \(item.outcomeText), \(item.sourceFormat) to \(item.targetFormat)")
+                        .accessibilityValue(item.conversionDurationText ?? "Completion time unavailable")
                     }
                 }
             }
@@ -61,20 +63,21 @@ struct MenuBarContentView: View {
 
             HStack(spacing: AppSpacing.small) {
                 if let recovery = model.state.history.first(where: \.needsRecoveryAction) {
-                    Button("Review Recovery…", systemImage: "cross.case.fill") {
+                    Button("Review Recovery", systemImage: "cross.case.fill") {
                         model.selectHistory(recovery.id)
-                        openWindow(id: "history")
+                        openHistory()
                     }
                     .accessibilityHint("Opens the unresolved recovery item in Conversion History")
                 }
-                Button("History…", systemImage: "clock.arrow.circlepath") {
-                    openWindow(id: "history")
+                Button("History", systemImage: "clock.arrow.circlepath") {
+                    openHistory()
                 }
                 .keyboardShortcut("h", modifiers: [.command])
                 .accessibilityIdentifier(AccessibilityID.openHistory)
 
-                SettingsLink {
-                    Label("Settings…", systemImage: "gearshape")
+                Button("Settings", systemImage: "gearshape") {
+                    openSettings()
+                    activateFrontmostApplicationWindow()
                 }
                 .keyboardShortcut(",", modifiers: [.command])
 
@@ -94,7 +97,7 @@ struct MenuBarContentView: View {
             if let itemID = request.itemID {
                 model.selectHistory(itemID)
             }
-            openWindow(id: "history")
+            openHistory()
             model.completeHistoryNavigation(request)
         }
         .overlay {
@@ -106,20 +109,24 @@ struct MenuBarContentView: View {
             }
         }
         .alert(item: Binding(get: { model.alert }, set: { _ in model.dismissAlert() })) { alert in
-            if let action = alert.action {
-                Alert(
-                    title: Text(alert.title),
-                    message: Text(alert.message),
-                    primaryButton: .default(Text("Reveal in Finder")) {
-                        model.performAlertAction(action)
-                    },
-                    secondaryButton: .cancel { model.dismissAlert() }
-                )
-            } else {
-                Alert(title: Text(alert.title), message: Text(alert.message), dismissButton: .default(Text("OK")))
-            }
+            Alert(title: Text(alert.title), message: Text(alert.message), dismissButton: .default(Text("OK")))
         }
     }
+    private func openHistory() {
+        openWindow(id: "history")
+        activateFrontmostApplicationWindow()
+    }
+
+    private func activateFrontmostApplicationWindow() {
+        Task { @MainActor in
+            await Task.yield()
+            NSApplication.shared.activate(ignoringOtherApps: true)
+            NSApplication.shared.windows.first {
+                $0.isVisible && $0.level == .normal && $0.canBecomeKey
+            }?.makeKeyAndOrderFront(nil)
+        }
+    }
+
 
     @ViewBuilder
     private var statusSection: some View {
@@ -159,7 +166,7 @@ struct MenuBarContentView: View {
                 title: "Choose where File-Flip works",
                 message: "Only folders you authorize are monitored. Existing files are never scanned for conversions."
             )
-            Button("Authorize Folders…", systemImage: "folder.badge.plus") {
+            Button("Authorize Folders", systemImage: "folder.badge.plus") {
                 model.chooseFolders()
             }
             .buttonStyle(.borderedProminent)
@@ -205,10 +212,17 @@ private struct RecentActivityRow: View {
                     .lineLimit(1)
             }
             Spacer(minLength: AppSpacing.xSmall)
-            Text(item.date, style: .relative)
-                .font(.caption2)
-                .foregroundStyle(AppColor.secondaryInk)
-                .lineLimit(1)
+            if let duration = item.conversionDurationText {
+                Text(duration)
+                    .font(.caption2)
+                    .foregroundStyle(AppColor.secondaryInk)
+                    .lineLimit(1)
+            } else {
+                Text(item.date, style: .relative)
+                    .font(.caption2)
+                    .foregroundStyle(AppColor.secondaryInk)
+                    .lineLimit(1)
+            }
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(AppColor.secondaryInk)
@@ -270,21 +284,35 @@ struct OnboardingView: View {
     }
 }
 
+private enum SettingsTab: Hashable {
+    case general
+    case folders
+    case defaults
+    case formats
+    case storage
+}
+
 struct FileConvertSettingsView: View {
     @Environment(FileConvertViewModel.self) private var model
+    @State private var selectedTab = SettingsTab.general
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             GeneralSettingsView()
                 .tabItem { Label("General", systemImage: "gearshape") }
+                .tag(SettingsTab.general)
             WatchedFoldersSettingsView()
                 .tabItem { Label("Folders", systemImage: "folder") }
+                .tag(SettingsTab.folders)
             PolicySettingsView()
                 .tabItem { Label("Defaults", systemImage: "slider.horizontal.3") }
+                .tag(SettingsTab.defaults)
             ProviderSettingsView()
                 .tabItem { Label("Formats", systemImage: "square.grid.2x2") }
+                .tag(SettingsTab.formats)
             StorageSettingsView()
                 .tabItem { Label("Storage", systemImage: "externaldrive") }
+                .tag(SettingsTab.storage)
         }
         .padding(AppSpacing.large)
         .frame(minWidth: AppLayout.settingsMinimumWidth, minHeight: AppLayout.settingsMinimumHeight)
@@ -602,8 +630,16 @@ struct HistoryView: View {
     @Environment(FileConvertViewModel.self) private var model
     @State private var confirmsClear = false
 
+    private var selectedHistoryID: UUID? {
+        guard let selectedID = model.state.selectedHistoryID,
+              model.state.history.contains(where: { $0.id == selectedID }) else {
+            return model.state.history.first?.id
+        }
+        return selectedID
+    }
+
     private var selectedItem: HistoryItemState? {
-        model.state.history.first { $0.id == model.state.selectedHistoryID } ?? model.state.history.first
+        model.state.history.first { $0.id == selectedHistoryID }
     }
 
     var body: some View {
@@ -618,7 +654,7 @@ struct HistoryView: View {
                     .padding(AppSpacing.large)
                 } else {
                     List(model.state.history, selection: Binding(
-                        get: { model.state.selectedHistoryID },
+                        get: { selectedHistoryID },
                         set: { model.selectHistory($0) }
                     )) { item in
                         HistoryRow(item: item)
@@ -627,7 +663,7 @@ struct HistoryView: View {
                     }
                 }
                 Divider()
-                Button("Clear History…", systemImage: "trash") { confirmsClear = true }
+                Button("Clear History…", systemImage: "trash", role: .destructive) { confirmsClear = true }
                     .disabled(model.state.history.isEmpty || model.isPerformingAction)
                     .padding(AppSpacing.medium)
                     .accessibilityIdentifier(AccessibilityID.historyClear)
@@ -666,18 +702,7 @@ struct HistoryView: View {
             UndoConflictView(item: item)
         }
         .alert(item: Binding(get: { model.alert }, set: { _ in model.dismissAlert() })) { alert in
-            if let action = alert.action {
-                Alert(
-                    title: Text(alert.title),
-                    message: Text(alert.message),
-                    primaryButton: .default(Text("Reveal in Finder")) {
-                        model.performAlertAction(action)
-                    },
-                    secondaryButton: .cancel { model.dismissAlert() }
-                )
-            } else {
-                Alert(title: Text(alert.title), message: Text(alert.message), dismissButton: .default(Text("OK")))
-            }
+            Alert(title: Text(alert.title), message: Text(alert.message), dismissButton: .default(Text("OK")))
         }
     }
 }
@@ -698,8 +723,13 @@ private struct HistoryRow: View {
                 .font(.caption).foregroundStyle(.secondary)
             Text(item.behaviorText)
                 .font(.caption2).foregroundStyle(.secondary)
-            Text(item.date, style: .relative)
-                .font(.caption2).foregroundStyle(.secondary)
+            if let duration = item.conversionDurationText {
+                Text(duration)
+                    .font(.caption2).foregroundStyle(.secondary)
+            } else {
+                Text(item.date, style: .relative)
+                    .font(.caption2).foregroundStyle(.secondary)
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(item.fileName), \(item.outcomeText), \(item.sourceFormat) to \(item.targetFormat)")
@@ -723,6 +753,9 @@ private struct HistoryDetailView: View {
                 AppPanel {
                     Grid(alignment: .leading, horizontalSpacing: AppSpacing.large, verticalSpacing: AppSpacing.small) {
                         GridRow { Text("Date").foregroundStyle(.secondary); Text(item.date.formatted(date: .abbreviated, time: .shortened)) }
+                        if let duration = item.conversionDurationText {
+                            GridRow { Text("Duration").foregroundStyle(.secondary); Text(duration) }
+                        }
                         GridRow { Text("Provider").foregroundStyle(.secondary); Text(providerText) }
                         GridRow { Text("File access").foregroundStyle(.secondary); Text(availabilityText) }
                         GridRow { Text("Result").foregroundStyle(.secondary); Text(item.behaviorText) }

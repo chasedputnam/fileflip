@@ -162,6 +162,12 @@ func persistedConversionDurationIsNonnegative() {
 
     #expect(conversionDuration(createdAt: createdAt, updatedAt: createdAt.addingTimeInterval(125)) == 125)
     #expect(conversionDuration(createdAt: createdAt, updatedAt: createdAt.addingTimeInterval(-1)) == 0)
+    #expect(formattedConversionDuration(0) == "0ms")
+    #expect(formattedConversionDuration(0.125) == "125ms")
+    #expect(formattedConversionDuration(0.9999) == "999ms")
+    #expect(formattedConversionDuration(1) == "1s")
+    #expect(formattedConversionDuration(125) == "2m 5s")
+    #expect(formattedConversionDuration(3_661) == "1h 1m")
 }
 
 @MainActor
@@ -174,7 +180,7 @@ func latestConversionOutcomeDrivesMenuIconAndPostsNotifications() async {
 
     await model.refresh()
     #expect(model.state.status == .monitoring)
-    #expect(model.state.status.systemImage == "checkmark.circle.fill")
+    #expect(model.state.status.systemImage == "checkmark.seal.text.page")
     #expect(notifications.posted.isEmpty)
     #expect(notifications.authorizationRequestCount == 1)
 
@@ -199,7 +205,7 @@ func latestConversionOutcomeDrivesMenuIconAndPostsNotifications() async {
     await model.refresh()
 
     #expect(model.state.status == .conversionFailed)
-    #expect(model.state.status.systemImage == "exclamationmark.circle.fill")
+    #expect(model.state.status.systemImage == "exclamationmark.triangle.text.page")
     #expect(notifications.posted.count == 1)
     #expect(notifications.posted[0].title == "Conversion failed")
     #expect(notifications.posted[0].subtitle == "PNG → JPEG")
@@ -222,7 +228,7 @@ func latestConversionOutcomeDrivesMenuIconAndPostsNotifications() async {
     await model.refresh()
 
     #expect(model.state.status == .monitoring)
-    #expect(model.state.status.systemImage == "checkmark.circle.fill")
+    #expect(model.state.status.systemImage == "checkmark.seal.text.page")
     #expect(notifications.posted.count == 2)
     #expect(notifications.posted[1].title == "Conversion complete")
     #expect(notifications.posted[1].subtitle == "PNG → JPEG · 2m 5s")
@@ -389,8 +395,7 @@ func recoveryActionsFollowRecordedJobStateInsteadOfCurrentDefault() async {
     #expect(runtime.restoredRecoveries.count == 1)
     #expect(runtime.restoredRecoveries[0].0 == item.id)
     #expect(runtime.restoredRecoveries[0].1 == destination)
-    #expect(model.alert?.title == "Recovery Complete")
-    #expect(model.alert?.message == "draft — Recovered.docx was restored successfully.")
+    #expect(model.alert == nil)
 }
 
 @MainActor
@@ -418,7 +423,7 @@ func manualRecoveryResolutionRequiresConfirmation() async {
 
     #expect(prompter.manualConfirmationIDs == [item.id, item.id])
     #expect(runtime.acknowledgedRecoveries == [item.id])
-    #expect(model.alert?.title == "Recovery Marked Resolved")
+    #expect(model.alert == nil)
 }
 
 @MainActor
@@ -548,7 +553,7 @@ func startupDoesNotRetainPriorFailureInMenuIcon() async {
     await model.refresh()
 
     #expect(model.state.status == .monitoring)
-    #expect(model.state.status.systemImage == "checkmark.circle.fill")
+    #expect(model.state.status.systemImage == "checkmark.seal.text.page")
     #expect(notifications.posted.isEmpty)
 }
 @MainActor

@@ -8,11 +8,6 @@ struct AppAlertState: Identifiable, Equatable {
     let id = UUID()
     let title: String
     let message: String
-    enum Action: Equatable {
-        case reveal(URL)
-    }
-
-    var action: Action? = nil
 }
 
 struct HistoryNavigationRequest: Equatable {
@@ -423,12 +418,7 @@ final class FileConvertViewModel {
         }
         selectHistory(item.id)
         perform {
-            let restored = try await self.runtime.restoreRecovery(item, destination: destination)
-            self.alert = AppAlertState(
-                title: "Recovery Complete",
-                message: "\(restored.lastPathComponent) was restored successfully.",
-                action: .reveal(restored)
-            )
+            _ = try await self.runtime.restoreRecovery(item, destination: destination)
         }
     }
 
@@ -440,10 +430,6 @@ final class FileConvertViewModel {
         selectHistory(item.id)
         perform {
             try await self.runtime.acknowledgeRecovery(item)
-            self.alert = AppAlertState(
-                title: "Recovery Marked Resolved",
-                message: "No file was restored. Recovery warnings for \(item.fileName) have stopped."
-            )
         }
     }
 
@@ -463,15 +449,6 @@ final class FileConvertViewModel {
         alert = nil
     }
 
-    func performAlertAction(_ action: AppAlertState.Action) {
-        switch action {
-        case let .reveal(url):
-            if FileManager.default.fileExists(atPath: url.path) {
-                NSWorkspace.shared.activateFileViewerSelecting([url])
-            }
-        }
-        alert = nil
-    }
 
     private func perform(_ action: @escaping @MainActor () async throws -> Void) {
         guard !isPerformingAction else { return }
@@ -626,7 +603,7 @@ final class FileConvertViewModel {
             if item.outcome == .succeeded {
                 content.title = "Conversion complete"
                 if let duration = item.conversionDuration {
-                    content.subtitle += " · \(Self.formattedDuration(duration))"
+                    content.subtitle += " · \(formattedConversionDuration(duration))"
                 }
                 content.body = "\(basename) was converted successfully."
             } else if item.outcome == .needsRecovery {
@@ -646,16 +623,6 @@ final class FileConvertViewModel {
         }
     }
 
-    private static func formattedDuration(_ duration: TimeInterval) -> String {
-        let totalSeconds = max(0, Int(duration.rounded()))
-        if totalSeconds < 60 {
-            return "\(totalSeconds)s"
-        }
-        if totalSeconds < 3_600 {
-            return "\(totalSeconds / 60)m \(totalSeconds % 60)s"
-        }
-        return "\(totalSeconds / 3_600)h \((totalSeconds % 3_600) / 60)m"
-    }
 
     private static func notificationNextAction(for item: HistoryItemState) -> String {
         if item.outcome == .needsRecovery {

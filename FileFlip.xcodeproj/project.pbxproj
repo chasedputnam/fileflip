@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F104E27CD19A4710A1200001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F104E27CD19A4710A1200002 /* Assets.xcassets */; };
 		01045AA1A79A6C9404916290 /* DocumentTransactionIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFF3B019261E1EFD44A509B /* DocumentTransactionIntegrationTests.swift */; };
 		01D3220C03C0165364119B72 /* phase7-malformed.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 15F73660FF85E3BCEFFB5DAB /* phase7-malformed.pdf */; };
 		074FEAD19CA2D85E228824D9 /* RenamePipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB37D32A5ED6A0F17D90CA3 /* RenamePipeline.swift */; };
@@ -189,6 +190,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F104E27CD19A4710A1200002 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Sources/FileConvertApp/Resources/Assets.xcassets; sourceTree = "<group>"; };
 		00140EF67F8E079DA8EC07B4 /* ffmpeg */ = {isa = PBXFileReference; includeInIndex = 1; name = ffmpeg; path = Sources/FileConvertApp/Resources/MediaTools/ffmpeg; sourceTree = "<group>"; };
 		0278AA01E40A194882487966 /* NativePDFProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NativePDFProvider.swift; path = Sources/FileConvertProviders/NativePDFProvider.swift; sourceTree = "<group>"; };
 		02C6C02C14CC15C0D0C0BD7A /* RootAuthorizationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RootAuthorizationTests.swift; path = Tests/FileConvertCoreTests/RootAuthorizationTests.swift; sourceTree = "<group>"; };
@@ -379,6 +381,7 @@
 				8365F9BB84307E0521E72EBB /* FileConvertViewModel.swift */,
 				0D8FF794F3F436DC88A71852 /* FolderOnboarding.swift */,
 				20D779983E647EF2D02DBED6 /* OnboardingWindowController.swift */,
+				F104E27CD19A4710A1200002 /* Assets.xcassets */,
 				1F39DB0C3F2349807C714A4F /* ffmpeg.txt */,
 				A3BFB4FE31CB4165E6A4B870 /* lame.txt */,
 				818FDF6D5A512EF9C2B4542F /* libogg.txt */,
@@ -830,6 +833,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F104E27CD19A4710A1200001 /* Assets.xcassets in Resources */,
 				E41A960078081E23643CB829 /* MediaTools in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1334,7 +1338,6 @@
 			buildSettings = {
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1385,7 +1388,6 @@
 			buildSettings = {
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;

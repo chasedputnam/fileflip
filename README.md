@@ -111,9 +111,9 @@ flowchart LR
 
 ### Modules
 
-- **`File-FlipApp`** — SwiftUI `MenuBarExtra`, onboarding and Settings windows, application state, provider bootstrap, monitoring lifecycle, notifications, and launch-at-login integration.
-- **`File-FlipCore`** — domain types, security-scoped folder authorization, FSEvents ingestion, strict rename correlation, content detection, SQLite WAL journal, transaction state machine, recovery, retention, and undo.
-- **`File-FlipProviders`** — provider registry, native image/PDF/document converters, bounded FFmpeg and LibreOffice process execution, capability certification, and independent artifact validators.
+- **`FileConvertApp`** — SwiftUI `MenuBarExtra`, onboarding and Settings windows, application state, provider bootstrap, monitoring lifecycle, notifications, and launch-at-login integration.
+- **`FileConvertCore`** — domain types, security-scoped folder authorization, FSEvents ingestion, strict rename correlation, content detection, SQLite WAL journal, transaction state machine, recovery, retention, and undo.
+- **`FileConvertProviders`** — provider registry, native image/PDF/document converters, bounded FFmpeg and LibreOffice process execution, capability certification, and independent artifact validators.
 
 ### Conversion transaction
 
@@ -243,12 +243,3 @@ python3 Scripts/release-readiness.py \
 ```
 
 `release/release-contract.json` is the source of truth for required platforms, suites, thresholds, fixture inventories, architectures, entitlements, and external evidence. A green local test run does not by itself certify a distributable release.
-
-## Design records
-
-- [Requirements](specs/macos-extension-converter/requirements.md)
-- [Architecture and design](specs/macos-extension-converter/design.md)
-- [Implementation task record](specs/macos-extension-converter/tasks.md)
-- [Conversion output-mode requirements](specs/conversion-output-mode/requirements.md)
-- [Conversion output-mode design](specs/conversion-output-mode/design.md)
-- [Conversion output-mode implementation task record](specs/conversion-output-mode/tasks.md)

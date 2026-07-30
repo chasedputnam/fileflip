@@ -39,7 +39,10 @@ let package = Package(
         .executableTarget(
             name: "FileConvertApp",
             dependencies: ["FileConvertCore", "FileConvertProviders"],
-            resources: [.copy("Resources/MediaTools")]
+            resources: [
+                .process("Resources/Assets.xcassets"),
+                .copy("Resources/MediaTools"),
+            ]
         ),
         .testTarget(name: "FileConvertCoreTests", dependencies: ["FileConvertCore"]),
         .testTarget(
