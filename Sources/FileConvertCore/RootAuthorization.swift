@@ -329,10 +329,14 @@ public actor RootMonitoringController {
         await pipeline.stop()
     }
 
+    public func drainForUpdateInstallationAndWaitForIdle() async {
+        await pipeline.drainForInstallationAndWaitForIdle()
+    }
+
     private func refreshPipeline() async {
         let roots = await authorization.monitorableRoots()
         await pipeline.replaceRoots(roots)
-        await pipeline.start(source: source)
+        await pipeline.resume(source: source)
     }
 }
 

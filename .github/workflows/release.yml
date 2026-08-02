@@ -1,0 +1,273 @@
+name: Publish GitHub release
+
+on:
+  push:
+    tags:
+      - "v[0-9]*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Validate application version and tag
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          app="release-artifacts/FileFlip.app"
+          info="$app/Contents/Info.plist"
+          [[ -d "$app" ]] || { echo "Missing application bundle: $app" >&2; exit 1; }
+          [[ -f "$info" ]] || { echo "Missing application metadata: $info" >&2; exit 1; }
+
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$info")"
+          [[ "$version" =~ ^[0-9]+(\.[0-9]+){1,3}$ ]] || {
+            echo "Invalid CFBundleShortVersionString: $version" >&2
+            exit 1
+          }
+
+          expected_tag="v$version"
+          [[ "$GITHUB_REF_NAME" == "$expected_tag" ]] || {
+            echo "Tag $GITHUB_REF_NAME does not match application version $version; expected $expected_tag" >&2
+            exit 1
+          }
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "app=$app" >> "$GITHUB_OUTPUT"
+
+      - name: Verify signed and notarized application
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="${{ steps.metadata.outputs.app }}"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          xcrun stapler validate "$app"
+          spctl --assess --type execute --verbose=4 "$app"
+
+      - name: Resolve pinned Sparkle tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          swift package resolve
+          python3 scripts/check-updater-config.py
+          for tool in generate_appcast generate_keys sign_update; do
+            [[ -x ".build/artifacts/sparkle/Sparkle/bin/$tool" ]] || {
+              echo "Missing Sparkle tool: $tool" >&2
+              exit 1
+            }
+          done
+
+      - name: Import Sparkle signing key
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$SPARKLE_PRIVATE_KEY" ]] || {
+            echo "The SPARKLE_PRIVATE_KEY repository secret is required" >&2
+            exit 1
+          }
+
+          tools=".build/artifacts/sparkle/Sparkle/bin"
+          account="$(python3 -c 'import json; print(json.load(open("release/release-contract.json"))["updater"]["keychainAccount"])')"
+          expected_public_key="$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' '${{ steps.metadata.outputs.app }}/Contents/Info.plist')"
+          key_file="$RUNNER_TEMP/sparkle-private-key"
+
+          umask 077
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$key_file"
+          trap 'rm -f "$key_file"' EXIT
+          "$tools/generate_keys" --account "$account" -f "$key_file"
+          rm -f "$key_file"
+          trap - EXIT
+
+          observed_public_key="$("$tools/generate_keys" --account "$account" -p)"
+          [[ "$observed_public_key" == "$expected_public_key" ]] || {
+            echo "Sparkle private key does not match the application public key" >&2
+            exit 1
+          }
+
+      - name: Build DMG and signed updater metadata
+        id: assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.metadata.outputs.version }}"
+          app="${{ steps.metadata.outputs.app }}"
+          dmg="$RUNNER_TEMP/FileFlip.dmg"
+          notes="$RUNNER_TEMP/FileFlip.md"
+          output="$RUNNER_TEMP/updater-assets"
+          source_zip="$RUNNER_TEMP/file-flip-$version-source.zip"
+
+          scripts/create-release-dmg.sh \
+            --app "$app" \
+            --output "$dmg"
+
+          gh api \
+            --method POST \
+            "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+            -f tag_name="$GITHUB_REF_NAME" \
+            -f target_commitish="$GITHUB_SHA" \
+            --jq '.body // ""' > "$notes"
+
+          previous_tag="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName // ""')"
+          history_mode="initial"
+          previous_appcast=""
+          history=(--initial-release)
+          if [[ -n "$previous_tag" ]]; then
+            previous_directory="$RUNNER_TEMP/previous-release"
+            mkdir "$previous_directory"
+            gh release download "$previous_tag" \
+              --repo "$GITHUB_REPOSITORY" \
+              --pattern appcast.xml \
+              --dir "$previous_directory"
+            previous_appcast="$previous_directory/appcast.xml"
+            [[ -s "$previous_appcast" ]] || {
+              echo "Previous release $previous_tag has no appcast.xml" >&2
+              exit 1
+            }
+            history_mode="previous"
+            history=(--previous-appcast "$previous_appcast")
+          fi
+
+          python3 scripts/prepare-updater-release.py \
+            --app "$app" \
+            --dmg "$dmg" \
+            --tag "$GITHUB_REF_NAME" \
+            --release-notes "$notes" \
+            --output-dir "$output" \
+            "${history[@]}"
+
+          git archive \
+            --format=zip \
+            --prefix="file-flip-$version/" \
+            --output="$source_zip" \
+            "$GITHUB_SHA"
+
+          for asset in "$output/FileFlip.dmg" "$output/FileFlip.dmg.sha256" "$output/appcast.xml" "$source_zip"; do
+            [[ -s "$asset" ]] || { echo "Release asset is empty: $asset" >&2; exit 1; }
+          done
+
+          echo "output=$output" >> "$GITHUB_OUTPUT"
+          echo "source_zip=$source_zip" >> "$GITHUB_OUTPUT"
+          echo "notes=$notes" >> "$GITHUB_OUTPUT"
+          echo "history_mode=$history_mode" >> "$GITHUB_OUTPUT"
+          echo "previous_appcast=$previous_appcast" >> "$GITHUB_OUTPUT"
+
+      - name: Validate draft and publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+          APP: ${{ steps.metadata.outputs.app }}
+          OUTPUT: ${{ steps.assets.outputs.output }}
+          SOURCE_ZIP: ${{ steps.assets.outputs.source_zip }}
+          NOTES: ${{ steps.assets.outputs.notes }}
+          HISTORY_MODE: ${{ steps.assets.outputs.history_mode }}
+          PREVIOUS_APPCAST: ${{ steps.assets.outputs.previous_appcast }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists" >&2
+            exit 1
+          fi
+
+          published=0
+          cleanup_release() {
+            if [[ "$published" -eq 0 ]]; then
+              gh release delete "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --yes >/dev/null 2>&1 || true
+            else
+              gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft >/dev/null 2>&1 || true
+            fi
+          }
+          trap cleanup_release EXIT
+
+          gh release create "$GITHUB_REF_NAME" \
+            "$OUTPUT/FileFlip.dmg#FileFlip installer" \
+            "$OUTPUT/FileFlip.dmg.sha256#FileFlip installer SHA-256" \
+            "$OUTPUT/appcast.xml#Sparkle update feed" \
+            "$SOURCE_ZIP#Source code" \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --title "FileFlip $VERSION" \
+            --notes-file "$NOTES" \
+            --draft
+
+          downloaded="$RUNNER_TEMP/downloaded-draft-assets"
+          mkdir "$downloaded"
+          gh release download "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir "$downloaded"
+
+          history=(--initial-release)
+          if [[ "$HISTORY_MODE" == "previous" ]]; then
+            history=(--previous-appcast "$PREVIOUS_APPCAST")
+          fi
+          python3 scripts/prepare-updater-release.py \
+            --validate-only \
+            --app "$APP" \
+            --dmg "$downloaded/FileFlip.dmg" \
+            --appcast "$downloaded/appcast.xml" \
+            --checksum "$downloaded/FileFlip.dmg.sha256" \
+            --tag "$GITHUB_REF_NAME" \
+            "${history[@]}"
+
+          gh release edit "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft=false \
+            --prerelease=false
+          published=1
+
+          public="$RUNNER_TEMP/public-release-assets"
+          mkdir "$public"
+          curl --disable --fail --location --proto '=https' --proto-redir '=https' \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/appcast.xml" \
+            --output "$public/appcast.xml"
+          curl --disable --fail --location --proto '=https' --proto-redir '=https' \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/FileFlip.dmg" \
+            --output "$public/FileFlip.dmg"
+          curl --disable --fail --location --proto '=https' --proto-redir '=https' \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/FileFlip.dmg.sha256" \
+            --output "$public/FileFlip.dmg.sha256"
+
+          python3 scripts/prepare-updater-release.py \
+            --validate-only \
+            --app "$APP" \
+            --dmg "$public/FileFlip.dmg" \
+            --appcast "$public/appcast.xml" \
+            --checksum "$public/FileFlip.dmg.sha256" \
+            --tag "$GITHUB_REF_NAME" \
+            "${history[@]}"
+
+          latest_appcast="$public/latest-appcast.xml"
+          latest_matches=0
+          for attempt in {1..10}; do
+            if curl --disable --fail --location --proto '=https' --proto-redir '=https' \
+              "https://github.com/$GITHUB_REPOSITORY/releases/latest/download/appcast.xml" \
+              --output "$latest_appcast" &&
+              cmp -s "$public/appcast.xml" "$latest_appcast"; then
+              latest_matches=1
+              break
+            fi
+            sleep 3
+          done
+          [[ "$latest_matches" -eq 1 ]] || {
+            echo "The latest-release appcast does not resolve to $GITHUB_REF_NAME" >&2
+            exit 1
+          }
+          trap - EXIT

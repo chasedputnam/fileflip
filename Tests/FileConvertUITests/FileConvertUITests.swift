@@ -395,6 +395,150 @@ final class FileConvertUITests: XCTestCase {
         XCTAssertTrue(application.descendants(matching: .any)["defaults.spreadsheet.formula-values"].exists)
     }
 
+    func testUpdatesSettingsShowsInstalledVersionAndManualControls() {
+        launchUpdates(scenario: "idle")
+
+        XCTAssertTrue(textContaining("0.1.0").waitForExistence(timeout: 2))
+        XCTAssertTrue(textContaining("Build").exists)
+        let automatic = application.checkBoxes["updates.automatic"]
+        XCTAssertTrue(automatic.isEnabled)
+        XCTAssertEqual(automatic.label, "Automatically keep FileFlip up to date, On")
+        automatic.click()
+        XCTAssertEqual(automatic.label, "Automatically keep FileFlip up to date, Off")
+        XCTAssertTrue(application.buttons["updates.check"].isEnabled)
+        XCTAssertEqual(updateStatus.value as? String, "Ready to Check")
+    }
+
+    func testUpToDateStateShowsSuccessfulCheckAndAllowsManualRecheck() {
+        launchUpdates(scenario: "up-to-date")
+
+        XCTAssertEqual(updateStatus.value as? String, "FileFlip Is Up to Date")
+        XCTAssertTrue(textContaining("Last successful check").exists)
+        let check = application.buttons["updates.check"]
+        XCTAssertTrue(check.isEnabled)
+        check.click()
+        XCTAssertEqual(updateStatus.value as? String, "Checking for Updates")
+    }
+
+    func testDisablingAutomaticUpdatesCancelsCancellableDownload() {
+        launchUpdates(scenario: "downloading")
+
+        let automatic = application.checkBoxes["updates.automatic"]
+        XCTAssertTrue(automatic.isEnabled)
+        automatic.click()
+
+        XCTAssertEqual(automatic.label, "Automatically keep FileFlip up to date, Off")
+        XCTAssertEqual(updateStatus.value as? String, "Ready to Check")
+        XCTAssertFalse(application.descendants(matching: .any)["updates.progress"].exists)
+        XCTAssertTrue(application.buttons["updates.check"].isEnabled)
+    }
+
+    func testAvailableUpdateExposesReleaseAndTransitionsToDownload() {
+        launchUpdates(scenario: "available")
+
+        XCTAssertEqual(updateStatus.value as? String, "Update Available")
+        XCTAssertTrue(textContaining("0.2.0").exists)
+        XCTAssertTrue(application.links["updates.release-link"].exists)
+        let download = application.buttons["updates.download"]
+        XCTAssertTrue(download.isEnabled)
+        download.click()
+        XCTAssertEqual(updateStatus.value as? String, "Downloading Update")
+        XCTAssertFalse(download.exists)
+    }
+
+    func testKnownAndUnknownDownloadProgressAreAccessible() {
+        launchUpdates(scenario: "downloading")
+        XCTAssertEqual(updateStatus.value as? String, "Downloading Update")
+        let progress = application.descendants(matching: .any)["updates.progress"]
+        XCTAssertEqual(progress.label, "Download progress, 42 percent")
+
+        restartUpdates(scenario: "downloading-unknown-length")
+        XCTAssertEqual(updateStatus.value as? String, "Downloading Update")
+        XCTAssertEqual(
+            application.descendants(matching: .any)["updates.progress"].label,
+            "Download progress, In progress"
+        )
+    }
+
+    func testVerificationAndReadyInstallStatesExposeOnlyValidActions() {
+        launchUpdates(scenario: "verifying")
+        XCTAssertEqual(updateStatus.value as? String, "Verifying Update")
+        XCTAssertFalse(application.buttons["updates.check"].exists)
+        XCTAssertFalse(application.buttons["updates.install"].exists)
+
+        restartUpdates(scenario: "ready")
+        XCTAssertEqual(updateStatus.value as? String, "Ready to Install. The verified update will install when FileFlip quits.")
+        XCTAssertTrue(application.buttons["updates.install"].isEnabled)
+
+        restartUpdates(scenario: "ready-active")
+        let install = application.buttons["updates.install"]
+        XCTAssertTrue(install.exists)
+        XCTAssertFalse(install.isEnabled)
+        XCTAssertTrue((updateStatus.value as? String)?.contains("Finish the active conversion") == true)
+    }
+
+    func testUpdateFailureRetryAndDismissRemainActionable() {
+        launchUpdates(scenario: "failed-network")
+        XCTAssertTrue((updateStatus.value as? String)?.contains("Update Failed") == true)
+        XCTAssertTrue(application.descendants(matching: .any)["updates.failure"].exists)
+        XCTAssertTrue(application.buttons["updates.releases"].isEnabled)
+
+        let retry = application.buttons["updates.retry"]
+        XCTAssertTrue(retry.isEnabled)
+        retry.click()
+        XCTAssertEqual(updateStatus.value as? String, "Checking for Updates")
+
+        restartUpdates(scenario: "failed-verification")
+        let dismiss = application.buttons["updates.dismiss"]
+        XCTAssertTrue(dismiss.isEnabled)
+        dismiss.click()
+        XCTAssertEqual(updateStatus.value as? String, "Ready to Check")
+    }
+
+    func testRemainingUpdateFailureFamiliesExposeSafeRecoveryActions() {
+        let scenarios: [(name: String, message: String, canRetry: Bool)] = [
+            (
+                "failed-metadata",
+                "The update information could not be verified.",
+                false
+            ),
+            (
+                "failed-download",
+                "The update could not be downloaded.",
+                true
+            ),
+            (
+                "failed-installation",
+                "The update could not be installed.",
+                true
+            ),
+            (
+                "failed-configuration",
+                "Automatic updates are unavailable because the update configuration is invalid.",
+                false
+            ),
+            (
+                "failed-unknown",
+                "The update could not be completed.",
+                true
+            ),
+        ]
+
+        for (index, scenario) in scenarios.enumerated() {
+            if index == 0 {
+                launchUpdates(scenario: scenario.name)
+            } else {
+                restartUpdates(scenario: scenario.name)
+            }
+
+            XCTAssertTrue(application.descendants(matching: .any)["updates.failure"].exists)
+            XCTAssertTrue(textContaining(scenario.message).exists)
+            XCTAssertEqual(application.buttons["updates.retry"].exists, scenario.canRetry)
+            XCTAssertTrue(application.buttons["updates.dismiss"].isEnabled)
+            XCTAssertTrue(application.buttons["updates.releases"].isEnabled)
+        }
+    }
+
     func testConversionBehaviorDefaultsToCopyAndBothSelectionsSurviveRelaunch() {
         launch(scenario: "successful")
         openDefaults()
@@ -746,6 +890,39 @@ final class FileConvertUITests: XCTestCase {
         XCTAssertTrue(buttonContaining("Converted").exists)
     }
 
+
+    func testUpdatesSettingsVisualModes() {
+        for appearance in ["light", "dark"] {
+            application.launchEnvironment["FILECONVERT_UI_TEST_APPEARANCE"] = appearance
+            launchUpdates(scenario: "ready")
+
+            let attachment = XCTAttachment(screenshot: application.windows.firstMatch.screenshot())
+            attachment.name = "Updates Settings — \(appearance)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+
+            application.terminate()
+        }
+    }
+
+    private var updateStatus: XCUIElement {
+        application.descendants(matching: .any)["updates.status"]
+    }
+
+    private func launchUpdates(scenario: String) {
+        launch(scenario: "updates-\(scenario)")
+        openMenuBarExtra()
+        application.buttons["Settings"].click()
+        let updatesTab = application.buttons["Updates"]
+        XCTAssertTrue(updatesTab.waitForExistence(timeout: 2))
+        updatesTab.click()
+        XCTAssertTrue(updateStatus.waitForExistence(timeout: 2))
+    }
+
+    private func restartUpdates(scenario: String) {
+        application.terminate()
+        launchUpdates(scenario: scenario)
+    }
 
     private func launch(scenario: String) {
         application.launchEnvironment["FILECONVERT_UI_TEST_SCENARIO"] = scenario

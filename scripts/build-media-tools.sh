@@ -67,8 +67,8 @@ done
 
 SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
 DARWIN_MAJOR="$(uname -r | cut -d. -f1)"
-COMMON_CFLAGS="-isysroot $SDKROOT -mmacosx-version-min=14.0 -fPIC"
-COMMON_LDFLAGS="-isysroot $SDKROOT -mmacosx-version-min=14.0"
+COMMON_CFLAGS="-isysroot $SDKROOT -mmacosx-version-min=15.0 -fPIC"
+COMMON_LDFLAGS="-isysroot $SDKROOT -mmacosx-version-min=15.0"
 
 build_arch() {
   local arch=$1

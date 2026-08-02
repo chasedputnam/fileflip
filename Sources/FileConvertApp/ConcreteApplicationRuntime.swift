@@ -373,6 +373,8 @@ private final class ConcreteApplicationRuntime: ApplicationRuntime {
     private var cachedProviders: [ProviderState]?
     private var initialized = false
     private var paused = false
+    private var updateInstallationReserved = false
+    private var shouldResumeMonitoringAfterUpdateCancellation = false
 
     init(
         storage: URL,
@@ -527,6 +529,45 @@ private final class ConcreteApplicationRuntime: ApplicationRuntime {
         try await ensureInitialized()
         self.paused = paused
         if paused { await monitoring.stop() } else { try await monitoring.restoreAndStart() }
+    }
+
+    func reserveUpdateInstallation() async throws -> Bool {
+        try await ensureInitialized()
+        guard !updateInstallationReserved else { return true }
+        updateInstallationReserved = true
+        shouldResumeMonitoringAfterUpdateCancellation = !paused
+        await monitoring.drainForUpdateInstallationAndWaitForIdle()
+        guard !Task.isCancelled else {
+            await cancelUpdateInstallationReservation()
+            return false
+        }
+        do {
+            let hasActiveConversion = try await journal.nonterminalJobs().contains {
+                $0.state == .converting || $0.state == .validating
+            }
+            guard !Task.isCancelled else {
+                await cancelUpdateInstallationReservation()
+                return false
+            }
+            if hasActiveConversion {
+                await cancelUpdateInstallationReservation()
+                return false
+            }
+            return true
+        } catch {
+            await cancelUpdateInstallationReservation()
+            throw error
+        }
+    }
+
+    func cancelUpdateInstallationReservation() async {
+        guard updateInstallationReserved else { return }
+        updateInstallationReserved = false
+        let shouldResume = shouldResumeMonitoringAfterUpdateCancellation
+        shouldResumeMonitoringAfterUpdateCancellation = false
+        if shouldResume {
+            try? await monitoring.restoreAndStart()
+        }
     }
 
     func setLaunchAtLogin(_ enabled: Bool) async throws { try launchAtLogin.setEnabled(enabled) }

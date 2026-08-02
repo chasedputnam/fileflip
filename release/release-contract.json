@@ -1,13 +1,25 @@
 {
   "schemaVersion": 2,
   "application": {
-    "bundleIdentifier": "app.fileconvert.FileConvert",
+    "bundleIdentifier": "com.chasedputnam.FileFlip",
     "executable": "Contents/MacOS/FileFlip",
     "infoPlist": "Contents/Info.plist",
-    "minimumMacOSMajor": 14,
+    "minimumMacOSMajor": 15,
     "requiredArchitectures": ["arm64"],
     "forbiddenEntitlements": ["com.apple.security.network.client", "com.apple.security.network.server"],
-    "permittedEmbeddedFrameworks": ["FileConvertCore.framework", "FileConvertProviders.framework"]
+    "permittedEmbeddedFrameworks": ["FileConvertCore.framework", "FileConvertProviders.framework", "Sparkle.framework"],
+    "signing": {
+      "approvedDeveloperIDTeamIdentifier": "C5C4W9B7FS"
+    }
+  },
+  "updater": {
+    "sparkleVersion": "2.9.4",
+    "keychainAccount": "com.chasedputnam.FileFlip",
+    "publicEdKey": "qRpScbDI+83LZ/B0ngu1s7hi4IG047zi96qnThQEfEQ=",
+    "repository": "chasedputnam/file-flip",
+    "feedAssetName": "appcast.xml",
+    "diskImageAssetName": "FileFlip.dmg",
+    "checksumAssetName": "FileFlip.dmg.sha256"
   },
   "fixturePolicy": {
     "defaultMode": "compare-only",
@@ -53,6 +65,14 @@
         "Tests/Fixtures/Office/command-injection-name.txt"
       ],
       "certification": "not an advertised-pair certification; a signed local LibreOffice matrix is required before office pairs are release-certified"
+    },
+    {
+      "id": "updater-supply-chain",
+      "kind": "hashed-static",
+      "path": "Tests/Fixtures/Updater/manifest.json",
+      "compareCommand": ["python3", "scripts/check-updater-fixtures.py"],
+      "updateCommand": ["FILECONVERT_UPDATE_UPDATER_FIXTURES=1", "python3", "scripts/check-updater-fixtures.py", "--update"],
+      "certification": "synthetic Ed25519 artifact and signed-feed verification with explicit fixture regeneration"
     }
   ],
   "packagedMedia": {

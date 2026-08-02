@@ -25,6 +25,8 @@ public actor RenamePipeline {
     private var pending: [FileKey: RenameCandidate] = [:]
     private var pendingOrder: [FileKey] = []
     private var activeWorkers = 0
+    private var idleWaiters: [CheckedContinuation<Void, Never>] = []
+    private var drainingForInstallation = false
     private var completed: Set<RenameDeduplicationKey> = []
     public private(set) var status: Status = .stopped
     public private(set) var latestCursors: [UUID: UInt64] = [:]
@@ -38,7 +40,7 @@ public actor RenamePipeline {
     }
 
     public func start(source: any RenameEventSource) async {
-        guard monitorTask == nil else { return }
+        guard monitorTask == nil, !drainingForInstallation else { return }
         let activeRoots = roots.values.filter { $0.enabled && $0.status == .active }.map { root in
             AuthorizedRoot(id: root.id, url: root.url, volumeUUID: root.volumeUUID, enabled: true, eventCursor: latestCursors[root.id] ?? root.eventCursor, status: .active)
         }
@@ -57,6 +59,7 @@ public actor RenamePipeline {
     }
 
     public func pause() {
+        drainingForInstallation = false
         guard status != .paused else { return }
         status = .paused
         monitorTask?.cancel()
@@ -65,17 +68,44 @@ public actor RenamePipeline {
         pendingOrder.removeAll()
     }
 
+    public func pauseAndWaitForIdle() async {
+        pause()
+        await waitForIdle()
+    }
+
+    public func drainForInstallationAndWaitForIdle() async {
+        guard !drainingForInstallation else {
+            await waitForIdle()
+            return
+        }
+        drainingForInstallation = true
+        status = .paused
+        monitorTask?.cancel()
+        monitorTask = nil
+        launchWorkers()
+        await waitForIdle()
+    }
+
     public func resume(source: any RenameEventSource) async {
         guard status == .paused || status == .degraded || status == .stopped else { return }
+        drainingForInstallation = false
         await start(source: source)
     }
 
     public func stop() {
+        drainingForInstallation = false
         monitorTask?.cancel()
         monitorTask = nil
         pending.removeAll()
         pendingOrder.removeAll()
         status = .stopped
+    }
+
+    private func waitForIdle() async {
+        guard activeWorkers > 0 || !pending.isEmpty else { return }
+        await withCheckedContinuation { continuation in
+            idleWaiters.append(continuation)
+        }
     }
 
     public func replaceRoots(_ newRoots: [AuthorizedRoot], source: (any RenameEventSource)? = nil) async {
@@ -115,7 +145,9 @@ public actor RenamePipeline {
     }
 
     private func launchWorkers() {
-        while status == .monitoring, activeWorkers < maximumConcurrency, let fileKey = pendingOrder.first {
+        while (status == .monitoring || drainingForInstallation),
+              activeWorkers < maximumConcurrency,
+              let fileKey = pendingOrder.first {
             pendingOrder.removeFirst()
             guard let candidate = pending.removeValue(forKey: fileKey) else { continue }
             activeWorkers += 1
@@ -126,7 +158,15 @@ public actor RenamePipeline {
     }
 
     private func process(_ candidate: RenameCandidate) async {
-        defer { activeWorkers -= 1; launchWorkers() }
+        defer {
+            activeWorkers -= 1
+            launchWorkers()
+            if activeWorkers == 0 && pending.isEmpty {
+                let waiters = idleWaiters
+                idleWaiters.removeAll()
+                waiters.forEach { $0.resume() }
+            }
+        }
         guard let stable = try? await RenameStabilityGate.evaluate(candidate, roots: roots) else { return }
         await submit(stable)
     }

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "mode": "compare-only",
+  "regenerationEnvironment": "FILECONVERT_UPDATE_UPDATER_FIXTURES=1",
+  "syntheticKey": {
+    "source": "RFC 8032 Ed25519 test vector 1",
+    "publicKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo="
+  },
+  "files": {
+    "FileFlip.dmg": "ea1cffddb0260e25a75f43a20c166b52660825637bfa55f9015b4fb24d525ff3",
+    "FileFlip.dmg.sha256": "f8987722508880562ccd5a5a7fa53a390d371dc889d3e0fcdf9c2d9cbfe2f3fc",
+    "FileFlip.app/Contents/Info.plist": "7350b016e6775c5c796ad96f7cbad57671e712a92e715096c0ad5320b2a58410",
+    "appcast.xml": "d23e7286d0e7cd4428e42fe7996c2ea0fee41f8392c6b37b4eb8ef098af0e6dc",
+    "ed25519-rfc8032-vector1.txt": "236e703a66980918c81ffe8ca04a236eb52f812e1346b5730f7983aaddb46f51"
+  }
+}

@@ -13,6 +13,20 @@ private final class SnapshotRuntime: ApplicationRuntime {
     private(set) var acknowledgedRecoveries: [UUID] = []
     var restoreRecoveryError: RecoveryActionError?
     var acknowledgeRecoveryError: RecoveryActionError?
+    var suspendRecoveryRestore = false
+    private(set) var isRecoveryRestoreSuspended = false
+    private var recoveryRestoreContinuation: CheckedContinuation<Void, Never>?
+    var permitsUpdateInstallationReservation = true
+    private(set) var updateInstallationReservationCount = 0
+    private(set) var updateInstallationCancellationCount = 0
+    var suspendUpdateInstallationReservation = false
+    var suspendUpdateInstallationCancellation = false
+    private(set) var isUpdateInstallationReservationSuspended = false
+    private(set) var isUpdateInstallationCancellationSuspended = false
+    private var updateInstallationReservationContinuation: CheckedContinuation<Void, Never>?
+    private var updateInstallationCancellationContinuation: CheckedContinuation<Void, Never>?
+    private(set) var savedDefaultsCount = 0
+    private(set) var savedRetentionCount = 0
 
     init(_ snapshot: ApplicationSnapshot) {
         current = snapshot
@@ -24,18 +38,46 @@ private final class SnapshotRuntime: ApplicationRuntime {
     func removeFolder(id: UUID) async throws {}
     func reauthorizeFolder(id: UUID, url: URL) async throws {}
     func setMonitoringPaused(_ paused: Bool) async throws {}
+    func reserveUpdateInstallation() async throws -> Bool {
+        updateInstallationReservationCount += 1
+        if suspendUpdateInstallationReservation {
+            isUpdateInstallationReservationSuspended = true
+            await withCheckedContinuation { updateInstallationReservationContinuation = $0 }
+            isUpdateInstallationReservationSuspended = false
+        }
+        return permitsUpdateInstallationReservation
+    }
+    func cancelUpdateInstallationReservation() async {
+        updateInstallationCancellationCount += 1
+        if suspendUpdateInstallationCancellation {
+            isUpdateInstallationCancellationSuspended = true
+            await withCheckedContinuation { updateInstallationCancellationContinuation = $0 }
+            isUpdateInstallationCancellationSuspended = false
+        }
+    }
     func setLaunchAtLogin(_ enabled: Bool) async throws {}
-    func saveDefaults(_ defaults: FutureJobDefaults) async throws {}
+    func saveDefaults(_ defaults: FutureJobDefaults) async throws {
+        savedDefaultsCount += 1
+    }
+    func saveRetention(days: Int, byteLimit: UInt64) async throws {
+        savedRetentionCount += 1
+    }
     func resolveTransparencyChoice(for item: HistoryItemState, backgroundARGB: UInt32) async throws {
         resolvedTransparencyChoices.append((item.id, backgroundARGB))
     }
     func resolveMediaTrackChoice(for item: HistoryItemState, audioTrack: Int?, subtitleTrack: Int?) async throws {
         resolvedMediaTrackChoices.append((item.id, audioTrack, subtitleTrack))
     }
-    func saveRetention(days: Int, byteLimit: UInt64) async throws {}
     func undo(_ item: HistoryItemState) async throws -> UndoResult { throw FileConvertError.destinationExists }
     func restoreToNewFile(_ item: HistoryItemState, destination: URL) async throws -> URL { destination }
     func restoreRecovery(_ item: HistoryItemState, destination: URL) async throws -> URL {
+        if suspendRecoveryRestore {
+            isRecoveryRestoreSuspended = true
+            await withCheckedContinuation { continuation in
+                recoveryRestoreContinuation = continuation
+            }
+            isRecoveryRestoreSuspended = false
+        }
         if let restoreRecoveryError { throw restoreRecoveryError }
         restoredRecoveries.append((item.id, destination))
         return destination
@@ -45,6 +87,24 @@ private final class SnapshotRuntime: ApplicationRuntime {
         acknowledgedRecoveries.append(item.id)
     }
     func clearHistory() async throws {}
+
+    func resumeRecoveryRestore() {
+        let continuation = recoveryRestoreContinuation
+        recoveryRestoreContinuation = nil
+        continuation?.resume()
+    }
+
+    func resumeUpdateInstallationReservation() {
+        let continuation = updateInstallationReservationContinuation
+        updateInstallationReservationContinuation = nil
+        continuation?.resume()
+    }
+
+    func resumeUpdateInstallationCancellation() {
+        let continuation = updateInstallationCancellationContinuation
+        updateInstallationCancellationContinuation = nil
+        continuation?.resume()
+    }
 }
 
 @MainActor
@@ -180,7 +240,7 @@ func latestConversionOutcomeDrivesMenuIconAndPostsNotifications() async {
 
     await model.refresh()
     #expect(model.state.status == .monitoring)
-    #expect(model.state.status.systemImage == "checkmark.seal.text.page")
+    #expect(model.state.status.systemImage == "externaldrive.badge.checkmark")
     #expect(notifications.posted.isEmpty)
     #expect(notifications.authorizationRequestCount == 1)
 
@@ -205,7 +265,7 @@ func latestConversionOutcomeDrivesMenuIconAndPostsNotifications() async {
     await model.refresh()
 
     #expect(model.state.status == .conversionFailed)
-    #expect(model.state.status.systemImage == "exclamationmark.triangle.text.page")
+    #expect(model.state.status.systemImage == "externaldrive.fill.badge.exclamationmark")
     #expect(notifications.posted.count == 1)
     #expect(notifications.posted[0].title == "Conversion failed")
     #expect(notifications.posted[0].subtitle == "PNG → JPEG")
@@ -228,7 +288,7 @@ func latestConversionOutcomeDrivesMenuIconAndPostsNotifications() async {
     await model.refresh()
 
     #expect(model.state.status == .monitoring)
-    #expect(model.state.status.systemImage == "checkmark.seal.text.page")
+    #expect(model.state.status.systemImage == "externaldrive.badge.checkmark")
     #expect(notifications.posted.count == 2)
     #expect(notifications.posted[1].title == "Conversion complete")
     #expect(notifications.posted[1].subtitle == "PNG → JPEG · 2m 5s")
@@ -553,7 +613,7 @@ func startupDoesNotRetainPriorFailureInMenuIcon() async {
     await model.refresh()
 
     #expect(model.state.status == .monitoring)
-    #expect(model.state.status.systemImage == "checkmark.seal.text.page")
+    #expect(model.state.status.systemImage == "externaldrive.badge.checkmark")
     #expect(notifications.posted.isEmpty)
 }
 @MainActor
@@ -578,15 +638,193 @@ func deniedNotificationDeliveryDoesNotCreateInAppFallbackOrReplayUnchangedOutcom
     #expect(notifications.posted.count == 1)
 }
 
+@MainActor
+@Test
+func immediateUpdateInstallationSafetyTracksLoadedAndConvertingState() async {
+    let root = AuthorizedRoot(url: URL(fileURLWithPath: "/Users/example/Downloads"), volumeUUID: UUID())
+    let runtime = SnapshotRuntime(snapshot(root: root, history: []))
+    let model = FileConvertViewModel(
+        runtime: runtime,
+        notificationService: RecordingNotificationService()
+    )
+    var reportedSafety: [Bool] = []
+    model.onImmediateUpdateInstallSafetyChanged = { reportedSafety.append($0) }
+
+    #expect(!model.isImmediateUpdateInstallSafe)
+    await model.refresh()
+    #expect(model.isImmediateUpdateInstallSafe)
+
+    runtime.current = snapshot(root: root, history: [], convertingCount: 1)
+    #expect(model.isImmediateUpdateInstallSafe)
+    let refreshedSafety = await model.refreshImmediateUpdateInstallSafety()
+    #expect(!refreshedSafety)
+    #expect(!model.isImmediateUpdateInstallSafe)
+
+    runtime.current = snapshot(root: root, history: [])
+    await model.refresh()
+    #expect(model.isImmediateUpdateInstallSafe)
+    #expect(reportedSafety == [false, true, false, true])
+}
+
+@MainActor
+@Test
+func immediateUpdateInstallationUsesRuntimeReservation() async {
+    let root = AuthorizedRoot(url: URL(fileURLWithPath: "/Users/example/Downloads"), volumeUUID: UUID())
+    let runtime = SnapshotRuntime(snapshot(root: root, history: []))
+    let model = FileConvertViewModel(
+        runtime: runtime,
+        notificationService: RecordingNotificationService()
+    )
+
+    await model.refresh()
+    let reserved = await model.reserveImmediateUpdateInstallation()
+    #expect(reserved)
+    #expect(runtime.updateInstallationReservationCount == 1)
+
+    await model.cancelUpdateInstallationReservation()
+    #expect(runtime.updateInstallationCancellationCount == 1)
+}
+
+@MainActor
+@Test
+func immediateUpdateReservationKeepsActionsDisabledThroughReserveAndCleanup() async {
+    let root = AuthorizedRoot(url: URL(fileURLWithPath: "/Users/example/Downloads"), volumeUUID: UUID())
+    let runtime = SnapshotRuntime(snapshot(root: root, history: []))
+    runtime.suspendUpdateInstallationReservation = true
+    let model = FileConvertViewModel(
+        runtime: runtime,
+        notificationService: RecordingNotificationService()
+    )
+    await model.refresh()
+
+    let reservation = Task { @MainActor in
+        await model.reserveImmediateUpdateInstallation()
+    }
+    await Task.yield()
+    #expect(runtime.isUpdateInstallationReservationSuspended)
+    #expect(model.isPerformingAction)
+
+    runtime.resumeUpdateInstallationReservation()
+    let reserved = await reservation.value
+    #expect(reserved)
+    #expect(model.isPerformingAction)
+
+    runtime.suspendUpdateInstallationCancellation = true
+    let cancellation = Task { @MainActor in
+        await model.cancelUpdateInstallationReservation()
+    }
+    await Task.yield()
+    #expect(runtime.isUpdateInstallationCancellationSuspended)
+    #expect(model.isPerformingAction)
+
+    runtime.resumeUpdateInstallationCancellation()
+    await cancellation.value
+    #expect(!model.isPerformingAction)
+}
+
+@MainActor
+@Test
+func recoveryPromptIsNotPresentedWhileUpdateReservationIsInFlight() async {
+    let root = AuthorizedRoot(url: URL(fileURLWithPath: "/Users/example/Downloads"), volumeUUID: UUID())
+    var item = historyItem(fileName: "draft.pdf", outcome: .needsRecovery, date: Date())
+    item.recoveryState = .unresolved(artifact: .available)
+    let runtime = SnapshotRuntime(snapshot(root: root, history: [item]))
+    runtime.suspendUpdateInstallationReservation = true
+    let prompter = RecordingRecoveryActionPrompter()
+    let model = FileConvertViewModel(
+        runtime: runtime,
+        notificationService: RecordingNotificationService(),
+        recoveryActionPrompter: prompter
+    )
+    await model.refresh()
+
+    let reservation = Task { @MainActor in
+        await model.reserveImmediateUpdateInstallation()
+    }
+    await Task.yield()
+    #expect(model.isPerformingAction)
+
+    model.acknowledgeRecovery(item)
+    #expect(prompter.manualConfirmationIDs.isEmpty)
+
+    runtime.resumeUpdateInstallationReservation()
+    _ = await reservation.value
+    await model.cancelUpdateInstallationReservation()
+}
+
+@MainActor
+@Test
+func defaultsAndRetentionMutationsAreRejectedDuringUpdateReservation() async {
+    let root = AuthorizedRoot(url: URL(fileURLWithPath: "/Users/example/Downloads"), volumeUUID: UUID())
+    let runtime = SnapshotRuntime(snapshot(root: root, history: []))
+    let model = FileConvertViewModel(
+        runtime: runtime,
+        notificationService: RecordingNotificationService()
+    )
+    await model.refresh()
+    let reserved = await model.reserveImmediateUpdateInstallation()
+    #expect(reserved)
+
+    let originalDefaults = model.state.defaults
+    let originalDays = model.state.backup.retentionDays
+    let originalLimit = model.state.backup.limitBytes
+    var changedDefaults = originalDefaults
+    changedDefaults.image.quality = 0.5
+    let changedDays = originalDays == 7 ? 30 : 7
+    let changedLimit = originalLimit == UInt64(5 << 30) ? UInt64(10 << 30) : UInt64(5 << 30)
+
+    model.updateDefaults(changedDefaults)
+    model.updateRetention(days: changedDays, byteLimit: changedLimit)
+
+    #expect(model.state.defaults == originalDefaults)
+    #expect(model.state.backup.retentionDays == originalDays)
+    #expect(model.state.backup.limitBytes == originalLimit)
+    #expect(runtime.savedDefaultsCount == 0)
+    #expect(runtime.savedRetentionCount == 0)
+
+    await model.cancelUpdateInstallationReservation()
+}
+
+
+@MainActor
+@Test
+func immediateUpdateInstallationWaitsForRecoveryWorkToFinish() async {
+    let root = AuthorizedRoot(url: URL(fileURLWithPath: "/Users/example/Downloads"), volumeUUID: UUID())
+    var item = historyItem(fileName: "draft.pdf", outcome: .needsRecovery, date: Date())
+    item.recoveryState = .unresolved(artifact: .available)
+    let destination = URL(fileURLWithPath: "/Users/example/Downloads/draft — Recovered.pdf")
+    let runtime = SnapshotRuntime(snapshot(root: root, history: [item]))
+    runtime.suspendRecoveryRestore = true
+    let model = FileConvertViewModel(
+        runtime: runtime,
+        notificationService: RecordingNotificationService(),
+        recoveryActionPrompter: RecordingRecoveryActionPrompter(destination: destination)
+    )
+
+    await model.refresh()
+    #expect(model.isImmediateUpdateInstallSafe)
+
+    model.restoreRecovery(item)
+    #expect(!model.isImmediateUpdateInstallSafe)
+    while !runtime.isRecoveryRestoreSuspended { await Task.yield() }
+    #expect(!model.isImmediateUpdateInstallSafe)
+
+    runtime.resumeRecoveryRestore()
+    while model.isPerformingAction { await Task.yield() }
+    #expect(model.isImmediateUpdateInstallSafe)
+}
+
+
 
 private func snapshot(
     root: AuthorizedRoot,
     history: [HistoryItemState],
-    defaults: FutureJobDefaults = FutureJobDefaults()
+    defaults: FutureJobDefaults = FutureJobDefaults(),
+    convertingCount: Int = 0
 ) -> ApplicationSnapshot {
     ApplicationSnapshot(
         monitoringStatus: .monitoring,
-        convertingCount: 0,
+        convertingCount: convertingCount,
         roots: [root],
         providers: [],
         history: history,

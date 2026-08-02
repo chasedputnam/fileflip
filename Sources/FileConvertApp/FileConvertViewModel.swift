@@ -231,16 +231,25 @@ final class SystemNotificationService: NotificationService {
 final class FileConvertViewModel {
     private(set) var state = AppViewState()
     private(set) var alert: AppAlertState?
-    private(set) var isPerformingAction = false
+    private var isPerformingOrdinaryAction = false
+    var isPerformingAction: Bool {
+        isPerformingOrdinaryAction || isUpdateInstallationReserved
+    }
     private(set) var undoConflict: HistoryItemState?
     private(set) var historyNavigationRequest: HistoryNavigationRequest?
     @ObservationIgnored var onFoldersAuthorized: (() -> Void)?
+    @ObservationIgnored var onImmediateUpdateInstallSafetyChanged: ((Bool) -> Void)?
     @ObservationIgnored private var defaultsSaveTask: Task<Void, Never>?
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var isRefreshing = false
     @ObservationIgnored private var hasRequestedNotificationAuthorization = false
     @ObservationIgnored private var promptedTransparencyChoiceIDs: Set<UUID> = []
     @ObservationIgnored private var promptedMediaTrackChoiceIDs: Set<UUID> = []
+    @ObservationIgnored private var activeConversionCount = 0
+    @ObservationIgnored private var isPerformingRecoveryAction = false
+    @ObservationIgnored private var isResolvingConversionChoice = false
+    private var isUpdateInstallationReserved = false
+    @ObservationIgnored private var lastReportedImmediateInstallSafety: Bool?
 
     private let runtime: any ApplicationRuntime
     private let notificationService: any NotificationService
@@ -252,6 +261,50 @@ final class FileConvertViewModel {
     private var hasLoadedSnapshot = false
     private var latestSessionOutcome: PersistentJobState?
     private var observedJobOutcomes: [UUID: PersistentJobState] = [:]
+    var isImmediateUpdateInstallSafe: Bool {
+        hasLoadedSnapshot
+            && activeConversionCount == 0
+            && !isPerformingRecoveryAction
+            && !isResolvingConversionChoice
+    }
+
+    func refreshImmediateUpdateInstallSafety() async -> Bool {
+        guard !isPerformingRecoveryAction, !isResolvingConversionChoice else { return false }
+        do {
+            activeConversionCount = try await runtime.snapshot().convertingCount
+        } catch {
+            activeConversionCount = 1
+        }
+        reportImmediateUpdateInstallSafetyIfChanged()
+        return isImmediateUpdateInstallSafe
+    }
+
+    func reserveImmediateUpdateInstallation() async -> Bool {
+        guard isImmediateUpdateInstallSafe, !isUpdateInstallationReserved else {
+            return isUpdateInstallationReserved
+        }
+        isUpdateInstallationReserved = true
+        do {
+            let reserved = try await runtime.reserveUpdateInstallation()
+            if reserved {
+                activeConversionCount = 0
+                reportImmediateUpdateInstallSafetyIfChanged()
+                return true
+            }
+        } catch {}
+        await runtime.cancelUpdateInstallationReservation()
+        isUpdateInstallationReserved = false
+        _ = await refreshImmediateUpdateInstallSafety()
+        return false
+    }
+
+    func cancelUpdateInstallationReservation() async {
+        guard isUpdateInstallationReserved else { return }
+        await runtime.cancelUpdateInstallationReservation()
+        isUpdateInstallationReserved = false
+        _ = await refreshImmediateUpdateInstallSafety()
+    }
+
 
     init(
         runtime: any ApplicationRuntime,
@@ -303,6 +356,7 @@ final class FileConvertViewModel {
             } else {
                 notifiedJobOutcomes = Dictionary(uniqueKeysWithValues: state.history.map { ($0.id, $0.outcome) })
                 hasLoadedSnapshot = true
+                reportImmediateUpdateInstallSafetyIfChanged()
             }
             observedJobOutcomes = Dictionary(uniqueKeysWithValues: state.history.map { ($0.id, $0.outcome) })
             if !state.folders.isEmpty && !hasRequestedNotificationAuthorization {
@@ -320,12 +374,13 @@ final class FileConvertViewModel {
     }
 
     func chooseFolders() {
-        guard let urls = folderPicker.chooseFolders() else { return }
+        guard !isPerformingAction, let urls = folderPicker.chooseFolders() else { return }
         perform { try await self.runtime.authorizeFolders(urls) }
     }
 
     func reauthorize(_ folder: WatchedFolderState) {
-        guard let url = folderPicker.chooseFolderToReauthorize(named: folder.name) else { return }
+        guard !isPerformingAction,
+              let url = folderPicker.chooseFolderToReauthorize(named: folder.name) else { return }
         perform { try await self.runtime.reauthorizeFolder(id: folder.id, url: url) }
     }
 
@@ -347,6 +402,7 @@ final class FileConvertViewModel {
     }
 
     func updateDefaults(_ defaults: FutureJobDefaults) {
+        guard !isPerformingAction else { return }
         state.defaults = defaults
         defaultsSaveTask?.cancel()
         defaultsSaveTask = Task { @MainActor [weak self] in
@@ -363,6 +419,7 @@ final class FileConvertViewModel {
     }
 
     func updateRetention(days: Int? = nil, byteLimit: UInt64? = nil) {
+        guard !isPerformingAction else { return }
         let newDays = days ?? state.backup.retentionDays
         let newLimit = byteLimit ?? state.backup.limitBytes
         state.backup.retentionDays = newDays
@@ -371,7 +428,7 @@ final class FileConvertViewModel {
     }
 
     func undo(_ item: HistoryItemState) {
-        perform {
+        perform(isRecoveryAction: true) {
             switch try await self.runtime.undo(item) {
             case .restored:
                 self.undoConflict = nil
@@ -398,37 +455,40 @@ final class FileConvertViewModel {
     }
 
     func restoreConflictToNewFile(_ item: HistoryItemState) {
+        guard !isPerformingAction else { return }
         let panel = NSSavePanel()
         panel.title = "Restore Original to a New File"
         panel.message = "The current file changed after conversion. Choose a different name so neither version is overwritten."
         panel.prompt = "Restore Copy"
         panel.nameFieldStringValue = Self.keepBothName(for: item.fileName)
         guard panel.runModal() == .OK, let destination = panel.url else { return }
-        perform {
+        perform(isRecoveryAction: true) {
             _ = try await self.runtime.restoreToNewFile(item, destination: destination)
             self.undoConflict = nil
         }
     }
 
     func restoreRecovery(_ item: HistoryItemState) {
-        guard item.canRestoreRetainedFile,
+        guard !isPerformingAction,
+              item.canRestoreRetainedFile,
               recoveryActionPrompter.confirmRestore(for: item),
               let destination = recoveryActionPrompter.chooseRestoreDestination(for: item) else {
             return
         }
         selectHistory(item.id)
-        perform {
+        perform(isRecoveryAction: true) {
             _ = try await self.runtime.restoreRecovery(item, destination: destination)
         }
     }
 
     func acknowledgeRecovery(_ item: HistoryItemState) {
-        guard item.needsRecoveryAction,
+        guard !isPerformingAction,
+              item.needsRecoveryAction,
               recoveryActionPrompter.confirmManualResolution(for: item) else {
             return
         }
         selectHistory(item.id)
-        perform {
+        perform(isRecoveryAction: true) {
             try await self.runtime.acknowledgeRecovery(item)
         }
     }
@@ -450,11 +510,24 @@ final class FileConvertViewModel {
     }
 
 
-    private func perform(_ action: @escaping @MainActor () async throws -> Void) {
+    private func perform(
+        isRecoveryAction: Bool = false,
+        _ action: @escaping @MainActor () async throws -> Void
+    ) {
         guard !isPerformingAction else { return }
-        isPerformingAction = true
+        isPerformingOrdinaryAction = true
+        if isRecoveryAction {
+            isPerformingRecoveryAction = true
+            reportImmediateUpdateInstallSafetyIfChanged()
+        }
         Task { @MainActor in
-            defer { isPerformingAction = false }
+            defer {
+                self.isPerformingOrdinaryAction = false
+                if isRecoveryAction {
+                    self.isPerformingRecoveryAction = false
+                    self.reportImmediateUpdateInstallSafetyIfChanged()
+                }
+            }
             do {
                 try await action()
                 await refresh()
@@ -466,6 +539,8 @@ final class FileConvertViewModel {
 
     private func apply(_ snapshot: ApplicationSnapshot) {
         let hadNoFolders = state.folders.isEmpty
+        activeConversionCount = snapshot.convertingCount
+        reportImmediateUpdateInstallSafetyIfChanged()
         state.folders = snapshot.roots.map(WatchedFolderState.init)
         state.providers = snapshot.providers
         state.history = Array(snapshot.history.prefix(100))
@@ -536,8 +611,14 @@ final class FileConvertViewModel {
             return
         }
 
-        isPerformingAction = true
-        defer { isPerformingAction = false }
+        isPerformingOrdinaryAction = true
+        isResolvingConversionChoice = true
+        reportImmediateUpdateInstallSafetyIfChanged()
+        defer {
+            isPerformingOrdinaryAction = false
+            isResolvingConversionChoice = false
+            reportImmediateUpdateInstallSafetyIfChanged()
+        }
         do {
             try await runtime.resolveTransparencyChoice(for: item, backgroundARGB: choice.argb)
             state.defaults.image.alphaBackgroundARGB = choice.argb
@@ -580,8 +661,14 @@ final class FileConvertViewModel {
                 : nil)
         let resolvedSubtitle = selection.subtitleTrack
             ?? (!subtitles.isEmpty ? state.defaults.video.subtitleTrack : nil)
-        isPerformingAction = true
-        defer { isPerformingAction = false }
+        isPerformingOrdinaryAction = true
+        isResolvingConversionChoice = true
+        reportImmediateUpdateInstallSafetyIfChanged()
+        defer {
+            isPerformingOrdinaryAction = false
+            isResolvingConversionChoice = false
+            reportImmediateUpdateInstallSafetyIfChanged()
+        }
         do {
             try await runtime.resolveMediaTrackChoice(
                 for: item,
@@ -632,6 +719,13 @@ final class FileConvertViewModel {
             return "Open Settings › Defaults, choose a policy, then rename the file again."
         }
         return "Open Conversion History for details before trying again."
+    }
+
+    private func reportImmediateUpdateInstallSafetyIfChanged() {
+        let isSafe = isImmediateUpdateInstallSafe
+        guard lastReportedImmediateInstallSafety != isSafe else { return }
+        lastReportedImmediateInstallSafety = isSafe
+        onImmediateUpdateInstallSafetyChanged?(isSafe)
     }
 
     private func present(_ error: Error, title: String) {

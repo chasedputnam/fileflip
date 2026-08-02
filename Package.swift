@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "FileConvert",
-    platforms: [.macOS(.v14)],
+    platforms: [.macOS(.v15)],
     products: [
         .library(name: "FileConvertCore", targets: ["FileConvertCore"]),
         .library(name: "FileConvertProviders", targets: ["FileConvertProviders"]),
@@ -13,7 +13,9 @@ let package = Package(
         .executable(name: "packaged-media-smoke", targets: ["packaged-media-smoke"]),
         .executable(name: "packaged-media-contract", targets: ["packaged-media-contract"]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.9.4"),
+    ],
     targets: [
         .target(name: "FileConvertCore"),
         .target(
@@ -38,7 +40,11 @@ let package = Package(
         ),
         .executableTarget(
             name: "FileConvertApp",
-            dependencies: ["FileConvertCore", "FileConvertProviders"],
+            dependencies: [
+                "FileConvertCore",
+                "FileConvertProviders",
+                .product(name: "Sparkle", package: "Sparkle"),
+            ],
             resources: [
                 .process("Resources/Assets.xcassets"),
                 .copy("Resources/MediaTools"),

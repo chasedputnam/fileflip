@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import plistlib
@@ -250,7 +251,54 @@ def is_macho(path: Path) -> bool:
     return code == 0 and "Mach-O" in output
 
 
-def check_architecture_and_signature(path: Path, app: Path, required: set[str], failures: list[str]) -> None:
+DEVELOPER_ID_TEAM_IDENTIFIER = re.compile(r"^[A-Z0-9]{10}$")
+
+
+def approved_developer_id_team(contract: dict[str, Any], failures: list[str]) -> str | None:
+    application = contract.get("application")
+    signing = application.get("signing") if isinstance(application, dict) else None
+    team_identifier = signing.get("approvedDeveloperIDTeamIdentifier") if isinstance(signing, dict) else None
+    if not isinstance(team_identifier, str) or not DEVELOPER_ID_TEAM_IDENTIFIER.fullmatch(team_identifier):
+        failures.append(
+            "release contract approved Developer ID TeamIdentifier is unconfigured; "
+            "set application.signing.approvedDeveloperIDTeamIdentifier to the production 10-character Team ID"
+        )
+        return None
+    return team_identifier
+
+
+def developer_id_requirement(team_identifier: str) -> str:
+    return (
+        "anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] "
+        "and certificate leaf[field.1.2.840.113635.100.6.1.13] "
+        f'and certificate leaf[subject.OU] = "{team_identifier}"'
+    )
+
+
+def code_label(path: Path, app: Path) -> str:
+    return "app bundle" if path == app else str(path.relative_to(app))
+
+
+def check_developer_id_identity(path: Path, app: Path, approved_team: str, failures: list[str]) -> None:
+    label = code_label(path, app)
+    code, output = command(["/usr/bin/codesign", "-d", "--verbose=4", str(path)])
+    match = re.search(r"^TeamIdentifier=(\S+)$", output, re.MULTILINE)
+    if code != 0 or match is None:
+        failures.append(f"Developer ID identity metadata could not be read for {label}: {output.strip()}")
+    elif match.group(1) != approved_team:
+        failures.append(
+            f"Developer ID TeamIdentifier mismatch for {label}: expected {approved_team}, observed {match.group(1)}"
+        )
+    code, output = command(
+        ["/usr/bin/codesign", "--verify", "--strict", "--requirements", developer_id_requirement(approved_team), str(path)]
+    )
+    if code != 0:
+        failures.append(f"Developer ID designated requirement failed for {label}: {output.strip()}")
+
+
+def check_architecture_and_signature(
+    path: Path, app: Path, required: set[str], approved_team: str, failures: list[str]
+) -> None:
     code, output = command(["/usr/bin/lipo", "-archs", str(path)])
     observed = set(output.split()) if code == 0 else set()
     if observed != required:
@@ -258,6 +306,12 @@ def check_architecture_and_signature(path: Path, app: Path, required: set[str], 
     code, output = command(["/usr/bin/codesign", "--verify", "--strict", "--verbose=2", str(path)])
     if code != 0:
         failures.append(f"nested executable signature failed for {path.relative_to(app)}: {output.strip()}")
+    code, output = command(["/usr/bin/codesign", "-d", "--verbose=4", str(path)])
+    if code != 0 or "runtime" not in output:
+        failures.append(
+            f"hardened runtime is absent for {path.relative_to(app)}"
+        )
+    check_developer_id_identity(path, app, approved_team, failures)
 
 
 def check_data_permissions(data_root: Path | None, failures: list[str]) -> None:
@@ -273,7 +327,13 @@ def check_data_permissions(data_root: Path | None, failures: list[str]) -> None:
             failures.append(f"data path is accessible by group or other users: {path} mode {mode:04o}")
 
 
-def check_bundle(contract: dict[str, Any], app: Path | None, data_root: Path | None, failures: list[str]) -> None:
+def check_bundle(
+    contract: dict[str, Any],
+    app: Path | None,
+    data_root: Path | None,
+    approved_team: str | None,
+    failures: list[str],
+) -> None:
     if app is None:
         failures.append("missing release candidate: pass --app /path/to/FileFlip.app")
         return
@@ -297,13 +357,14 @@ def check_bundle(contract: dict[str, Any], app: Path | None, data_root: Path | N
     if not re.match(rf"^{application['minimumMacOSMajor']}(?:\.|$)", minimum):
         failures.append("release candidate minimum macOS version differs from release contract")
     required = set(application["requiredArchitectures"])
-    check_architecture_and_signature(executable, app, required, failures)
+    if approved_team is None:
+        failures.append("release candidate signing identity cannot be checked until the approved Developer ID TeamIdentifier is configured")
+        return
+    check_architecture_and_signature(executable, app, required, approved_team, failures)
     code, output = command(["/usr/bin/codesign", "--verify", "--deep", "--strict", "--verbose=4", str(app)])
     if code != 0:
         failures.append(f"app signature verification failed: {output.strip()}")
-    code, output = command(["/usr/bin/codesign", "-d", "--verbose=4", str(app)])
-    if code != 0 or "runtime" not in output:
-        failures.append("hardened runtime is absent or could not be verified")
+    check_developer_id_identity(app, app, approved_team, failures)
     code, output = command(["/usr/bin/codesign", "-d", "--entitlements", ":-", str(app)], stdout_only=True)
     try:
         entitlements = plistlib.loads(output.encode("utf-8")) if output.strip() else {}
@@ -318,15 +379,63 @@ def check_bundle(contract: dict[str, Any], app: Path | None, data_root: Path | N
     unexpected = [item for item in embedded if item not in set(application["permittedEmbeddedFrameworks"])]
     if unexpected:
         failures.append(f"unauthorized embedded frameworks: {', '.join(unexpected)}")
-    for root in (app / "Contents/MacOS", frameworks, app / "Contents/Resources/MediaTools"):
-        if root.exists():
-            for candidate in root.rglob("*"):
-                if candidate.is_file() and is_macho(candidate):
-                    check_architecture_and_signature(candidate, app, required, failures)
+    signed_bundle_suffixes = {".framework", ".app", ".appex", ".xpc"}
+    for candidate in app.rglob("*"):
+        if candidate.is_dir() and candidate.suffix in signed_bundle_suffixes:
+            check_developer_id_identity(candidate, app, approved_team, failures)
+        elif candidate.is_file() and candidate != executable and is_macho(candidate):
+            check_architecture_and_signature(candidate, app, required, approved_team, failures)
     code, output = command(["/usr/sbin/spctl", "--assess", "--type", "execute", "--verbose=4", str(app)])
     if code != 0 or "Notarized Developer ID" not in output:
         failures.append("notarization assessment did not report a Notarized Developer ID release candidate")
     check_data_permissions(data_root, failures)
+
+
+def check_updater_metadata(
+    app: Path | None,
+    dmg: Path | None,
+    appcast: Path | None,
+    checksum: Path | None,
+    tag: str | None,
+    previous_appcast: Path | None,
+    initial_release: bool,
+    failures: list[str],
+) -> None:
+    supplied = [dmg, appcast, checksum, tag, previous_appcast]
+    if app is None:
+        if any(value is not None for value in supplied) or initial_release:
+            failures.append("updater metadata was supplied without a release application")
+        return
+    if dmg is None or appcast is None or checksum is None or tag is None:
+        failures.append("release application requires --dmg, --appcast, --checksum, and --release-tag")
+        return
+    if initial_release == (previous_appcast is not None):
+        failures.append("release application requires exactly one of --previous-appcast or --initial-release")
+        return
+    helper_path = ROOT / "scripts" / "prepare-updater-release.py"
+    spec = importlib.util.spec_from_file_location("fileflip_prepare_updater_release", helper_path)
+    if spec is None or spec.loader is None:
+        failures.append("updater release validator could not be loaded")
+        return
+    helper = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = helper
+    try:
+        spec.loader.exec_module(helper)
+        updater_contract = helper.load_contract(CONTRACT_PATH)
+        helper.validate_metadata(
+            app=app,
+            dmg=dmg,
+            appcast=appcast,
+            checksum=checksum,
+            tag=tag,
+            contract=updater_contract,
+            sign_update=updater_contract.tools_directory / "sign_update",
+            generate_keys=updater_contract.tools_directory / "generate_keys",
+            previous_appcast=previous_appcast,
+            initial_release=initial_release,
+        )
+    except (OSError, ValueError, json.JSONDecodeError, plistlib.InvalidFileException) as error:
+        failures.append(f"updater release metadata failed validation: {error}")
 
 
 def run_suites(contract: dict[str, Any], failures: list[str]) -> None:
@@ -345,12 +454,20 @@ def main() -> int:
     parser.add_argument("--data-root", type=Path, help="owner-only Application Support root produced by this candidate")
     parser.add_argument("--evidence", type=Path, default=ROOT / "release/evidence.json", help="machine-recorded release evidence")
     parser.add_argument("--run-suites", action="store_true", help="run exact suite commands before inspecting evidence")
+    parser.add_argument("--dmg", type=Path, help="exact notarized FileFlip.dmg release candidate")
+    parser.add_argument("--appcast", type=Path, help="candidate-bound signed appcast.xml")
+    parser.add_argument("--checksum", type=Path, help="candidate-bound FileFlip.dmg.sha256")
+    parser.add_argument("--release-tag", help="stable GitHub release tag, for example v1.2.3")
+    updater_history = parser.add_mutually_exclusive_group()
+    updater_history.add_argument("--previous-appcast", type=Path, help="downloaded currently published stable appcast")
+    updater_history.add_argument("--initial-release", action="store_true", help="assert that no stable appcast exists yet")
     args = parser.parse_args()
     failures: list[str] = []
     contract = load_json(CONTRACT_PATH, "release contract", failures)
     if contract is None or contract.get("schemaVersion") != 2:
         failures.append("release contract has an unsupported schemaVersion")
         return report(failures)
+    approved_team = approved_developer_id_team(contract, failures)
     if args.run_suites:
         run_suites(contract, failures)
     check_fixture_inventories(contract, failures)
@@ -358,7 +475,17 @@ def main() -> int:
     evidence = load_json(args.evidence, "release evidence", failures)
     check_evidence(contract, evidence, failures)
     check_packaged_media(contract, evidence, args.app, ROOT, command, failures)
-    check_bundle(contract, args.app, args.data_root, failures)
+    check_bundle(contract, args.app, args.data_root, approved_team, failures)
+    check_updater_metadata(
+        args.app,
+        args.dmg,
+        args.appcast,
+        args.checksum,
+        args.release_tag,
+        args.previous_appcast,
+        args.initial_release,
+        failures,
+    )
     return report(failures)
 
 

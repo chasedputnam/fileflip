@@ -9,6 +9,8 @@ protocol ApplicationRuntime: AnyObject {
     func removeFolder(id: UUID) async throws
     func reauthorizeFolder(id: UUID, url: URL) async throws
     func setMonitoringPaused(_ paused: Bool) async throws
+    func reserveUpdateInstallation() async throws -> Bool
+    func cancelUpdateInstallationReservation() async
     func setLaunchAtLogin(_ enabled: Bool) async throws
     func saveDefaults(_ defaults: FutureJobDefaults) async throws
     func resolveTransparencyChoice(for item: HistoryItemState, backgroundARGB: UInt32) async throws
@@ -23,6 +25,11 @@ protocol ApplicationRuntime: AnyObject {
     func restoreRecovery(_ item: HistoryItemState, destination: URL) async throws -> URL
     func acknowledgeRecovery(_ item: HistoryItemState) async throws
     func clearHistory() async throws
+}
+
+extension ApplicationRuntime {
+    func reserveUpdateInstallation() async throws -> Bool { false }
+    func cancelUpdateInstallationReservation() async {}
 }
 
 struct ApplicationSnapshot: Sendable {

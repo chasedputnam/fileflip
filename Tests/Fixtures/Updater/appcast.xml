@@ -1,0 +1,20 @@
+<?xml version="1.0" standalone="yes"?><!-- sparkle-sign-warning:
+IMPORTANT: This file was signed by Sparkle. Any modifications to this file requires re-signing this file with generate_appcast or sign_update! The signed signature will be embedded at the end of this file.
+--><rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>FileFlip</title>
+    <item>
+      <title>1.2.3</title>
+      <link>https://github.com/chasedputnam/file-flip/releases/tag/v1.2.3</link>
+      <sparkle:fullReleaseNotesLink>https://github.com/chasedputnam/file-flip/releases/tag/v1.2.3</sparkle:fullReleaseNotesLink>
+      <sparkle:version>123</sparkle:version>
+      <sparkle:shortVersionString>1.2.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+      <enclosure url="https://github.com/chasedputnam/file-flip/releases/download/v1.2.3/FileFlip.dmg" length="17653" type="application/octet-stream" sparkle:edSignature="6L0yzQXSHhdQ8SDYgYyFn0i2wrUnkBQQ/0GHiElBHRkbZ+XyoObGdZfAd+Obe52DS1qrQq4o13e1J5m0tRe8Bg=="></enclosure>
+    </item>
+  </channel>
+</rss><!-- sparkle-signatures:
+edSignature: V9b/hY+od2Fquo3mCwErEwf+6kaqRniUmP8xacgFiLkpw490j5u1OCDHHzzjTnuhe0lI2fDByMAEcabOKUS1DQ==
+length: 1214
+-->

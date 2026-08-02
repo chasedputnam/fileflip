@@ -43,13 +43,13 @@ enum MenuBarState: String, CaseIterable, Sendable {
 
     var systemImage: String {
         switch self {
-        case .idle, .monitoring: "checkmark.seal.text.page"
-        case .converting: "arrow.triangle.2.circlepath.circle.fill"
-        case .paused: "pause.circle.fill"
-        case .conversionFailed, .degraded: "exclamationmark.triangle.text.page"
-        case .needsChoice: "questionmark.text.page"
-        case .blocked: "xmark.octagon.fill"
-        case .needsRecovery: "waveform.path.ecg.text.page"
+        case .idle, .monitoring: "externaldrive.badge.checkmark"
+        case .converting: "externaldrive.fill"
+        case .paused: "externaldrive.badge.person.crop"
+        case .conversionFailed, .degraded: "externaldrive.fill.badge.exclamationmark"
+        case .needsChoice: "externaldrive.fill.badge.questionmark"
+        case .blocked: "externaldrive.fill.trianglebadge.exclamationmark"
+        case .needsRecovery: "externaldrive.fill.badge.xmark"
         }
     }
 }

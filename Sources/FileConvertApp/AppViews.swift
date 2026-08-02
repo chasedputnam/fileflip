@@ -170,6 +170,7 @@ struct MenuBarContentView: View {
                 model.chooseFolders()
             }
             .buttonStyle(.borderedProminent)
+            .disabled(model.isPerformingAction)
             .keyboardShortcut("+", modifiers: [.command])
             .accessibilityHint("Opens the macOS folder picker without preselecting a folder")
             .accessibilityIdentifier(AccessibilityID.onboardingAuthorize)
@@ -278,6 +279,7 @@ struct OnboardingView: View {
                 .keyboardShortcut(.defaultAction)
                 .accessibilityHint("Opens a system folder picker that allows one or more folders")
                 .accessibilityIdentifier(AccessibilityID.onboardingAuthorize)
+                .disabled(model.isPerformingAction)
         }
         .padding(AppSpacing.xxLarge)
         .frame(width: AppLayout.onboardingWidth)
@@ -290,6 +292,7 @@ private enum SettingsTab: Hashable {
     case defaults
     case formats
     case storage
+    case updates
 }
 
 struct FileConvertSettingsView: View {
@@ -313,7 +316,11 @@ struct FileConvertSettingsView: View {
             StorageSettingsView()
                 .tabItem { Label("Storage", systemImage: "externaldrive") }
                 .tag(SettingsTab.storage)
+            UpdateSettingsView()
+                .tabItem { Label("Updates", systemImage: "arrow.triangle.2.circlepath") }
+                .tag(SettingsTab.updates)
         }
+        .disabled(model.isPerformingAction)
         .padding(AppSpacing.large)
         .frame(minWidth: AppLayout.settingsMinimumWidth, minHeight: AppLayout.settingsMinimumHeight)
     }
@@ -623,6 +630,198 @@ private struct StorageSettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+private struct UpdateSettingsView: View {
+    @Environment(UpdateServiceModel.self) private var service
+
+    private var state: UpdateViewState { service.viewState }
+
+    var body: some View {
+        Form {
+            Section("Installed Version") {
+                LabeledContent("Version", value: state.installedVersion.version)
+                LabeledContent("Build", value: state.installedVersion.build)
+            }
+
+            Section("Automatic Updates") {
+                Toggle("Automatically keep FileFlip up to date", isOn: Binding(
+                    get: { service.automaticUpdatesEnabled },
+                    set: { service.setAutomaticUpdatesEnabled($0) }
+                ))
+                .toggleStyle(.checkbox)
+                .accessibilityIdentifier("updates.automatic")
+                .accessibilityLabel(
+                    "Automatically keep FileFlip up to date, \(service.automaticUpdatesEnabled ? "On" : "Off")"
+                )
+                .accessibilityValue(service.automaticUpdatesEnabled ? "On" : "Off")
+                Text("FileFlip checks the signed public GitHub release feed. File names, paths, contents, conversion history, and usage data are never sent.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("Update Status") {
+                Label(statusTitle, systemImage: statusSystemImage)
+                    .foregroundStyle(statusColor)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Update status")
+                    .accessibilityValue(statusDescription)
+                    .accessibilityIdentifier("updates.status")
+
+                if let release = state.availableRelease {
+                    LabeledContent("Available version", value: release.version)
+                    LabeledContent("Available build", value: release.build)
+                    if let releasePageURL = release.releasePageURL {
+                        Link("View Release on GitHub", destination: releasePageURL)
+                            .accessibilityIdentifier("updates.release-link")
+                    }
+                }
+
+                if let progress = state.progress {
+                    updateProgress(progress)
+                }
+
+                if let lastCheck = state.lastSuccessfulCheck {
+                    LabeledContent("Last successful check") {
+                        Text(lastCheck.formatted(date: .abbreviated, time: .shortened))
+                    }
+                }
+
+                if state.phase == .ready {
+                    Text(readyDescription)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if let failure = state.failure {
+                    Text(failure.message)
+                        .foregroundStyle(AppColor.critical)
+                        .accessibilityIdentifier("updates.failure")
+                }
+
+                actionButtons
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    @ViewBuilder
+    private func updateProgress(_ progress: UpdateProgress) -> some View {
+        if let fraction = progress.fractionCompleted {
+            ProgressView("Download progress", value: fraction)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Download progress, \(Int(fraction * 100)) percent")
+                .accessibilityValue("\(Int(fraction * 100)) percent")
+                .accessibilityIdentifier("updates.progress")
+        } else {
+            ProgressView("Download progress")
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Download progress, In progress")
+                .accessibilityValue("In progress")
+                .accessibilityIdentifier("updates.progress")
+        }
+        Text(progressDescription(progress))
+            .font(.caption)
+            .foregroundStyle(.secondary)
+    }
+
+    @ViewBuilder
+    private var actionButtons: some View {
+        HStack {
+            switch state.phase {
+            case .idle, .upToDate:
+                Button("Check for Updates") { service.checkForUpdates() }
+                    .disabled(!service.canCheckForUpdates)
+                    .accessibilityIdentifier("updates.check")
+            case .available:
+                Button("Download Update") { service.downloadAvailableUpdate() }
+                    .disabled(!state.canDownloadAvailableUpdate)
+                    .accessibilityIdentifier("updates.download")
+            case .ready:
+                Button("Install and Relaunch") { service.installAndRelaunch() }
+                    .disabled(!service.canInstallAndRelaunch)
+                    .accessibilityHint(service.canInstallAndRelaunch
+                        ? "Installs the verified update and relaunches FileFlip."
+                        : "Finish the active conversion or recovery action first.")
+                    .accessibilityIdentifier("updates.install")
+            case .failed:
+                if state.canRetry {
+                    Button("Retry") { service.retryCurrentOperation() }
+                        .accessibilityIdentifier("updates.retry")
+                }
+                Button("Dismiss") { service.dismissCurrentError() }
+                    .accessibilityIdentifier("updates.dismiss")
+                Button("Open GitHub Releases") { service.openReleasesPage() }
+                    .accessibilityIdentifier("updates.releases")
+            case .checking, .downloading, .verifying, .installing:
+                EmptyView()
+            }
+        }
+    }
+
+    private var statusTitle: String {
+        switch state.phase {
+        case .idle: "Ready to Check"
+        case .checking: "Checking for Updates"
+        case .upToDate: "FileFlip Is Up to Date"
+        case .available: "Update Available"
+        case .downloading: "Downloading Update"
+        case .verifying: "Verifying Update"
+        case .ready: "Ready to Install"
+        case .installing: "Installing Update"
+        case .failed: "Update Failed"
+        }
+    }
+
+    private var statusDescription: String {
+        if let failure = state.failure {
+            return "\(statusTitle). \(failure.message)"
+        }
+        if state.phase == .ready {
+            return "\(statusTitle). \(readyDescription)"
+        }
+        return statusTitle
+    }
+
+    private var statusSystemImage: String {
+        switch state.phase {
+        case .idle: "arrow.triangle.2.circlepath"
+        case .checking, .downloading, .verifying, .installing: "arrow.down.circle"
+        case .upToDate: "checkmark.circle.fill"
+        case .available: "arrow.down.circle.fill"
+        case .ready: "checkmark.seal.fill"
+        case .failed: "exclamationmark.triangle.fill"
+        }
+    }
+
+    private var statusColor: Color {
+        switch state.phase {
+        case .upToDate, .ready: AppColor.success
+        case .checking, .available, .downloading, .verifying, .installing: AppColor.progress
+        case .failed: AppColor.critical
+        case .idle: .secondary
+        }
+    }
+
+    private var readyDescription: String {
+        let installTiming = state.installsOnQuit
+            ? "The verified update will install when FileFlip quits."
+            : "The verified update is ready to install."
+        guard !service.canInstallAndRelaunch else { return installTiming }
+        return "\(installTiming) Finish the active conversion or recovery action before installing and relaunching."
+    }
+
+    private func progressDescription(_ progress: UpdateProgress) -> String {
+        let transferred = ByteCountFormatter.string(
+            fromByteCount: progress.transferredByteCount,
+            countStyle: .file
+        )
+        guard let total = progress.totalByteCount else {
+            return "\(transferred) downloaded"
+        }
+        let totalText = ByteCountFormatter.string(fromByteCount: total, countStyle: .file)
+        return "\(transferred) of \(totalText) downloaded"
     }
 }
 

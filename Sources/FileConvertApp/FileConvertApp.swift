@@ -8,6 +8,7 @@ import UserNotifications
 @MainActor
 struct FileConvertApp: App {
     @State private var model: FileConvertViewModel
+    @State private var updateService: UpdateServiceModel
     private let onboardingWindow: OnboardingWindowController
     private let notificationRouter: SystemNotificationResponseRouter
 
@@ -24,14 +25,53 @@ struct FileConvertApp: App {
         let model = FileConvertViewModel(runtime: runtime)
         let onboardingWindow = OnboardingWindowController()
         let notificationRouter = SystemNotificationResponseRouter()
+        let environment = ProcessInfo.processInfo.environment
+        let updateCoordinator: UpdateCoordinator?
+        let updateBackend: any UpdateServicing
+        if environment["FILECONVERT_UI_TESTING"] == "1",
+           let rawScenario = environment["FILECONVERT_UI_TEST_SCENARIO"],
+           rawScenario.hasPrefix("updates-") {
+            let scenarioName = String(rawScenario.dropFirst("updates-".count))
+            let isActiveWorkDeferral = scenarioName == "ready-active"
+            let scenario = FakeUpdateService.Scenario(
+                rawValue: isActiveWorkDeferral ? "ready" : scenarioName
+            ) ?? .idle
+            updateCoordinator = nil
+            updateBackend = FakeUpdateService(
+                scenario: scenario,
+                installedVersion: InstalledVersion(version: "0.1.0", build: "1"),
+                isImmediateInstallSafe: { !isActiveWorkDeferral }
+            )
+        } else {
+            let coordinator = UpdateCoordinator(
+                isImmediateInstallSafe: { [weak model] in
+                    model?.isImmediateUpdateInstallSafe ?? false
+                },
+                prepareImmediateInstallation: { [weak model] in
+                    await model?.reserveImmediateUpdateInstallation() ?? false
+                },
+                cancelImmediateInstallation: { [weak model] in
+                    await model?.cancelUpdateInstallationReservation()
+                }
+            )
+            updateCoordinator = coordinator
+            updateBackend = coordinator
+        }
+        let updateService = UpdateServiceModel(service: updateBackend)
         model.onFoldersAuthorized = { [weak model, weak onboardingWindow] in
             guard let model else { return }
             onboardingWindow?.dismissWhenAuthorized(model: model)
+        }
+        if let updateCoordinator {
+            model.onImmediateUpdateInstallSafetyChanged = { [weak updateCoordinator] _ in
+                updateCoordinator?.activeWorkSafetyDidChange()
+            }
         }
         notificationRouter.onOpenHistory = { [weak model] itemID in
             model?.requestHistoryNavigation(itemID: itemID)
         }
         _model = State(initialValue: model)
+        _updateService = State(initialValue: updateService)
         self.onboardingWindow = onboardingWindow
         self.notificationRouter = notificationRouter
         Task { @MainActor [model, onboardingWindow] in
@@ -65,6 +105,7 @@ struct FileConvertApp: App {
         Settings {
             FileConvertSettingsView()
                 .environment(model)
+                .environment(updateService)
         }
     }
 }
