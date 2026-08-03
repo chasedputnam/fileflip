@@ -7,8 +7,8 @@ require "fileutils"
 ROOT = File.expand_path("..", __dir__)
 APP_NAME = "FileFlip"
 APP_CATEGORY = "public.app-category.utilities"
-APP_VERSION = "0.1.0"
-APP_BUILD_NUMBER = "1"
+APP_VERSION = "0.2.2"
+APP_BUILD_NUMBER = "2"
 PROJECT_PATH = File.join(ROOT, "#{APP_NAME}.xcodeproj")
 SPARKLE_VERSION = "2.9.4"
 MACOS_DEPLOYMENT_TARGET = "15.0"
@@ -96,10 +96,12 @@ app.build_configurations.each do |configuration|
   configuration.build_settings["PRODUCT_MODULE_NAME"] = "FileConvertApp"
   configuration.build_settings["MARKETING_VERSION"] = APP_VERSION
   configuration.build_settings["CURRENT_PROJECT_VERSION"] = APP_BUILD_NUMBER
-  configuration.build_settings["APP_DISPLAY_NAME"] = APP_NAME
-  configuration.build_settings["APP_CATEGORY"] = APP_CATEGORY
+  configuration.build_settings["INFOPLIST_KEY_CFBundleDisplayName"] = APP_NAME
+  configuration.build_settings["INFOPLIST_KEY_LSApplicationCategoryType"] = APP_CATEGORY
   configuration.build_settings["ASSETCATALOG_COMPILER_APPICON_NAME"] = "AppIcon"
   configuration.build_settings["ENABLE_HARDENED_RUNTIME"] = "YES"
+  configuration.build_settings["DEVELOPMENT_TEAM"] = "C5C4W9B7FS"
+
 end
 [core, providers, evidence].each do |target|
   target.build_configurations.each do |configuration|
@@ -178,10 +180,22 @@ media_signing_phase.shell_script = <<~'SCRIPT'
   fi
 
   tools_directory="${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MediaTools"
+  manifest="${tools_directory}/manifest.json"
+  if [[ ! -f "${manifest}" ]]; then
+    echo "error: Missing bundled media tool manifest: ${manifest}" >&2
+    exit 1
+  fi
+  expected_team_identifier="C5C4W9B7FS"
+  artifact_index=0
   for executable_name in ffmpeg ffprobe; do
     executable="${tools_directory}/${executable_name}"
     if [[ ! -f "${executable}" ]]; then
       echo "error: Missing bundled media tool: ${executable}" >&2
+      exit 1
+    fi
+    manifest_name=$(/usr/bin/plutil -extract "artifacts.${artifact_index}.name" raw "${manifest}")
+    if [[ "${manifest_name}" != "${executable_name}" ]]; then
+      echo "error: Bundled media tool manifest order is invalid" >&2
       exit 1
     fi
     /usr/bin/codesign \
@@ -189,6 +203,22 @@ media_signing_phase.shell_script = <<~'SCRIPT'
       --sign "${EXPANDED_CODE_SIGN_IDENTITY}" \
       --options runtime \
       "${executable}"
+    if [[ "${EXPANDED_CODE_SIGN_IDENTITY}" == "-" ]]; then
+      signed_sha256=$(/usr/bin/shasum -a 256 "${executable}" | /usr/bin/cut -d ' ' -f 1)
+      /usr/bin/plutil -replace "artifacts.${artifact_index}.sha256" -string "${signed_sha256}" "${manifest}"
+      /usr/bin/plutil -replace "artifacts.${artifact_index}.signature.mode" -string adhoc "${manifest}"
+      /usr/bin/plutil -remove "artifacts.${artifact_index}.signature.teamIdentifier" "${manifest}" 2>/dev/null || true
+    else
+      if [[ "${DEVELOPMENT_TEAM:-}" != "${expected_team_identifier}" ]]; then
+        echo "error: Media tools must be signed by team ${expected_team_identifier}" >&2
+        exit 1
+      fi
+      /usr/bin/plutil -remove "artifacts.${artifact_index}.sha256" "${manifest}"
+      /usr/bin/plutil -replace "artifacts.${artifact_index}.signature.mode" -string identity "${manifest}"
+      /usr/bin/plutil -remove "artifacts.${artifact_index}.signature.teamIdentifier" "${manifest}" 2>/dev/null || true
+      /usr/bin/plutil -insert "artifacts.${artifact_index}.signature.teamIdentifier" -string "${expected_team_identifier}" "${manifest}"
+    fi
+    artifact_index=$((artifact_index + 1))
   done
 SCRIPT
 

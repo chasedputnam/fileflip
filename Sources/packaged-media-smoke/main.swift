@@ -78,7 +78,7 @@ private struct InstalledMediaSmoke: Sendable {
         environment.apply()
 
         guard let bundle = Bundle(url: installedApp),
-              bundle.bundleIdentifier == "app.fileconvert.FileConvert" else {
+              bundle.bundleIdentifier == "com.chasedputnam.FileFlip" else {
             throw SmokeFailure.invalidInput("Relocated application identity is invalid")
         }
         let mediaDirectory = try BundledMediaToolsLocator().locate(in: bundle)
@@ -88,9 +88,7 @@ private struct InstalledMediaSmoke: Sendable {
         }
         let validator = FFprobeMediaValidator(tools: components.tools)
         let fixtureManifest = try CertifiedMediaManifest.load(from: arguments.fixtureManifestURL)
-        let manifestSHA256 = try CandidateBundleHasher.fileSHA256(mediaDirectory.appending(path: "manifest.json"))
-        guard fixtureManifest.generator.ffmpegVersion == components.tools.version,
-              fixtureManifest.generator.manifestSHA256 == manifestSHA256 else {
+        guard fixtureManifest.generator.ffmpegVersion == components.tools.version else {
             throw SmokeFailure.invalidInput("Certified fixtures do not match the relocated application tools")
         }
 

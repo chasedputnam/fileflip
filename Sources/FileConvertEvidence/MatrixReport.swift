@@ -225,7 +225,7 @@ public struct MatrixReport: Codable, Hashable, Sendable {
         guard schemaVersion == Self.schemaVersion, !revision.isEmpty,
               ISO8601DateFormatter().date(from: generatedAt) != nil,
               platform.os == "macOS", platform.architecture == "arm64",
-              application.bundleIdentifier == "app.fileconvert.FileConvert", !application.version.isEmpty,
+              application.bundleIdentifier == "com.chasedputnam.FileFlip", !application.version.isEmpty,
               isLowercaseSHA256(application.candidateSHA256), provider.ffmpegVersion == "8.1.2",
               isLowercaseSHA256(provider.manifestSHA256), provider.contractVersion == InstalledMediaContract.version,
               isLowercaseSHA256(provider.routeSetSHA256), identities == sorted,

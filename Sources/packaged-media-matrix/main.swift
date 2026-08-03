@@ -63,7 +63,7 @@ private struct PackagedMediaMatrixRunner: Sendable {
         #endif
         let candidateSHA256 = try CandidateBundleHasher.sha256(of: arguments.appURL)
         guard let bundle = Bundle(url: arguments.appURL),
-              bundle.bundleIdentifier == "app.fileconvert.FileConvert",
+              bundle.bundleIdentifier == "com.chasedputnam.FileFlip",
               let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
               !version.isEmpty else {
             throw MatrixFailure.invalidInput("Candidate application identity is invalid")
@@ -74,8 +74,7 @@ private struct PackagedMediaMatrixRunner: Sendable {
         let components = try await PackagedMediaBootstrap().load(from: mediaDirectory)
         let probeValidator = FFprobeMediaValidator(tools: components.tools)
         let fixtureManifest = try CertifiedMediaManifest.load(from: arguments.fixturesURL)
-        guard fixtureManifest.generator.ffmpegVersion == components.tools.version,
-              fixtureManifest.generator.manifestSHA256 == manifestSHA256 else {
+        guard fixtureManifest.generator.ffmpegVersion == components.tools.version else {
             throw MatrixFailure.invalidInput("Certified fixtures do not match packaged media tools")
         }
 

@@ -2,10 +2,14 @@
 """Verify the fail-closed FileFlip packaged media resource layout."""
 from __future__ import annotations
 
+from collections.abc import Callable
 import argparse
+import hashlib
+import json
 import os
 from pathlib import Path
 import stat
+import subprocess
 import sys
 
 REQUIRED_LICENSES = frozenset({
@@ -18,6 +22,25 @@ REQUIRED_LICENSES = frozenset({
 })
 REQUIRED_MEDIA_ENTRIES = frozenset({"ffmpeg", "ffprobe", "manifest.json", "LICENSES"})
 FLATTENED_MEDIA_NAMES = REQUIRED_LICENSES | frozenset({"ffmpeg", "ffprobe", "manifest.json"})
+EXPECTED_TEAM_IDENTIFIER = "C5C4W9B7FS"
+
+
+def verify_identity_signature(path: Path) -> str | None:
+    requirement = (
+        "anchor apple generic and "
+        f'certificate leaf[subject.OU] = "{EXPECTED_TEAM_IDENTIFIER}"'
+    )
+    result = subprocess.run(
+        ["/usr/bin/codesign", "--verify", "--strict", f"-R={requirement}", str(path)],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+    if result.returncode == 0:
+        return None
+    return result.stderr.strip() or "codesign rejected the executable"
+
+
 
 
 def safe_entries(directory: Path, label: str, failures: list[str]) -> set[str]:
@@ -43,7 +66,63 @@ def require_regular(path: Path, label: str, failures: list[str], executable: boo
         failures.append(f"{label} is not executable: {path}")
 
 
-def verify_app(app: Path) -> list[str]:
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def verify_manifest(
+    media: Path,
+    failures: list[str],
+    identity_validator: Callable[[Path], str | None],
+) -> None:
+    manifest_path = media / "manifest.json"
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        artifacts = manifest["artifacts"]
+        by_name = {artifact["name"]: artifact for artifact in artifacts}
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError):
+        failures.append(f"media manifest is invalid: {manifest_path}")
+        return
+    if len(artifacts) != 2 or set(by_name) != {"ffmpeg", "ffprobe"}:
+        failures.append("media manifest does not declare exactly ffmpeg and ffprobe")
+        return
+    for name in ("ffmpeg", "ffprobe"):
+        artifact = by_name[name]
+        signature = artifact.get("signature")
+        if artifact.get("path") != name or not isinstance(signature, dict):
+            failures.append(f"media manifest artifact is invalid: {name}")
+            continue
+        mode = signature.get("mode")
+        expected = artifact.get("sha256")
+        if mode == "adhoc":
+            if not isinstance(expected, str) or signature.get("teamIdentifier") is not None:
+                failures.append(f"ad-hoc media manifest artifact is invalid: {name}")
+                continue
+            try:
+                actual = file_sha256(media / name)
+            except OSError as error:
+                failures.append(f"cannot hash packaged {name}: {error}")
+                continue
+            if actual != expected.lower():
+                failures.append(f"packaged {name} hash does not match the media manifest")
+        elif mode == "identity":
+            if expected is not None or signature.get("teamIdentifier") != EXPECTED_TEAM_IDENTIFIER:
+                failures.append(f"identity-signed media manifest artifact is invalid: {name}")
+                continue
+            if error := identity_validator(media / name):
+                failures.append(f"packaged {name} signature is invalid: {error}")
+        else:
+            failures.append(f"media manifest signature mode is invalid: {name}")
+
+
+def verify_app(
+    app: Path,
+    identity_validator: Callable[[Path], str | None] = verify_identity_signature,
+) -> list[str]:
     failures: list[str] = []
     resources = app / "Contents" / "Resources"
     media = resources / "MediaTools"
@@ -77,6 +156,7 @@ def verify_app(app: Path) -> list[str]:
             failures.append(f"license notices unexpected: {', '.join(unexpected)}")
     for name in REQUIRED_LICENSES:
         require_regular(licenses / name, f"license notice {name}", failures)
+    verify_manifest(media, failures, identity_validator)
     return failures
 
 

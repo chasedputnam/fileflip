@@ -138,7 +138,7 @@ private func passingReport() throws -> MatrixReport {
     return try MatrixReport(
         generatedAt: "2026-07-29T00:00:00Z", revision: "test-revision",
         platform: MatrixPlatform(os: "macOS", architecture: "arm64"),
-        application: MatrixApplication(bundleIdentifier: "app.fileconvert.FileConvert", version: "1.0", candidateSHA256: hex("a")),
+        application: MatrixApplication(bundleIdentifier: "com.chasedputnam.FileFlip", version: "1.0", candidateSHA256: hex("a")),
         provider: MatrixProvider(ffmpegVersion: "8.1.2", manifestSHA256: hex("b"), contractVersion: 1, routeSetSHA256: hex("c")),
         summary: MatrixSummary(expectedRoutes: 76, executedRoutes: 76, passedRoutes: 76, failedRoutes: 0, skippedRoutes: 0, audioRoutes: 56, videoRoutes: 20),
         routes: routes

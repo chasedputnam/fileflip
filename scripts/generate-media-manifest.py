@@ -23,6 +23,7 @@ from typing import Any
 SCHEMA_VERSION = 1
 ARCHITECTURES = ("arm64",)
 MAX_OUTPUT = 1024 * 1024
+EXPECTED_TEAM_IDENTIFIER = "C5C4W9B7FS"
 FORBIDDEN_CONFIGURATION = frozenset({"--enable-gpl", "--enable-nonfree", "--enable-version3"})
 APPROVED_ENABLED_CONFIGURATION = frozenset({
     "--enable-ffmpeg", "--enable-ffprobe", "--enable-libmp3lame", "--enable-libopus",
@@ -228,14 +229,31 @@ def main() -> int:
                 raise ManifestError(f"FFmpeg {key} inventory is missing approved entries: {', '.join(missing)}")
         sources, licenses = read_source_lock(args.source_lock)
         signing_identity = os.environ.get("MEDIA_TOOLS_SIGNING_IDENTITY")
-        signature = {"mode": "identity", "identity": signing_identity} if signing_identity and signing_identity != "-" else {"mode": "adhoc"}
+        if signing_identity and signing_identity != "-":
+            team_identifier = os.environ.get("MEDIA_TOOLS_TEAM_IDENTIFIER")
+            if team_identifier != EXPECTED_TEAM_IDENTIFIER:
+                raise ManifestError("identity-signed media tools require the Chase Putnam team identifier")
+            signature = {
+                "mode": "identity",
+                "identity": signing_identity,
+                "teamIdentifier": team_identifier,
+            }
+            artifacts = [
+                {"name": name, "path": name, "architectures": binary_architectures, "signature": signature}
+                for name, _ in (("ffmpeg", args.ffmpeg), ("ffprobe", args.ffprobe))
+            ]
+        else:
+            signature = {"mode": "adhoc"}
+            artifacts = [
+                {"name": name, "path": name, "sha256": sha256(path), "architectures": binary_architectures,
+                    "signature": signature}
+                for name, path in (("ffmpeg", args.ffmpeg), ("ffprobe", args.ffprobe))
+            ]
         manifest = {
             "schemaVersion": SCHEMA_VERSION, "status": "available", "ffmpegVersion": version(args.ffmpeg),
             "sources": sources, "licenses": licenses,
             "build": {"configuration": configuration, "configurationSHA256": configuration_sha256, "architectures": binary_architectures},
-            "artifacts": [{"name": name, "path": name, "sha256": sha256(path), "architectures": binary_architectures,
-                "signature": signature}
-                for name, path in (("ffmpeg", args.ffmpeg), ("ffprobe", args.ffprobe))],
+            "artifacts": artifacts,
             "inventory": {key: sorted(observed[key]) for key in EXPECTED_INVENTORY},
         }
         args.output.parent.mkdir(parents=True, exist_ok=True)

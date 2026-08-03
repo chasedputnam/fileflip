@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F65D43585BBB5F7748C93943"
+               BlueprintIdentifier = "A1A9A482A3A1C938A1E771BC"
                BuildableName = "FileFlip.app"
                BlueprintName = "FileConvertApp"
                ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -28,7 +28,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "FCECF3045590BB896FDE7CBA"
+               BlueprintIdentifier = "B8E9B2A44E4855E97A782B37"
                BuildableName = "FileConvertCore.framework"
                BlueprintName = "FileConvertCore"
                ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -42,7 +42,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "771CE306329D849A668D264D"
+               BlueprintIdentifier = "A68FF2DECDEE52D45BB4C518"
                BuildableName = "FileConvertProviders.framework"
                BlueprintName = "FileConvertProviders"
                ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -58,7 +58,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F65D43585BBB5F7748C93943"
+            BlueprintIdentifier = "A1A9A482A3A1C938A1E771BC"
             BuildableName = "FileFlip.app"
             BlueprintName = "FileConvertApp"
             ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -69,7 +69,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "37CD2243E0838A034770DC48"
+               BlueprintIdentifier = "5184712A9378FDCF66620F29"
                BuildableName = "FileConvertCoreTests.xctest"
                BlueprintName = "FileConvertCoreTests"
                ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -79,7 +79,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "6A5095BFF23C6D3574B36379"
+               BlueprintIdentifier = "7BD68B984FC7FFBD4009DF22"
                BuildableName = "FileConvertProvidersTests.xctest"
                BlueprintName = "FileConvertProvidersTests"
                ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -89,7 +89,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "69941195CADDE3A18CFC89D2"
+               BlueprintIdentifier = "2322357FCAE80AB1049BCC41"
                BuildableName = "FileConvertEvidenceTests.xctest"
                BlueprintName = "FileConvertEvidenceTests"
                ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -99,7 +99,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "892059F9E956E5D1A1CBBD11"
+               BlueprintIdentifier = "6EC4B9D61BC27F77A95EEEC2"
                BuildableName = "FileConvertIntegrationTests.xctest"
                BlueprintName = "FileConvertIntegrationTests"
                ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -109,7 +109,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2D2E927ADFFAB0853E625600"
+               BlueprintIdentifier = "9DABD1667DA23606177E878A"
                BuildableName = "FileConvertAppTests.xctest"
                BlueprintName = "FileConvertAppTests"
                ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -119,7 +119,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0879F80A2BB7387245F09F5F"
+               BlueprintIdentifier = "6C30B9A1B19EE550094C5C36"
                BuildableName = "FileConvertUITests.xctest"
                BlueprintName = "FileConvertUITests"
                ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -141,7 +141,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F65D43585BBB5F7748C93943"
+            BlueprintIdentifier = "A1A9A482A3A1C938A1E771BC"
             BuildableName = "FileFlip.app"
             BlueprintName = "FileConvertApp"
             ReferencedContainer = "container:FileFlip.xcodeproj">
@@ -158,7 +158,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F65D43585BBB5F7748C93943"
+            BlueprintIdentifier = "A1A9A482A3A1C938A1E771BC"
             BuildableName = "FileFlip.app"
             BlueprintName = "FileConvertApp"
             ReferencedContainer = "container:FileFlip.xcodeproj">

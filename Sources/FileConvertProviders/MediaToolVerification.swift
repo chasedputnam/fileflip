@@ -1,6 +1,7 @@
 import CryptoKit
 import Darwin
 import FileConvertCore
+import Security
 @preconcurrency import Foundation
 
 enum MediaConfigurationError: Error, Equatable {
@@ -167,12 +168,13 @@ public struct MediaToolManifest: Codable, Hashable, Sendable {
     public struct Signature: Codable, Hashable, Sendable {
         public let mode: String
         public let identity: String?
+        public let teamIdentifier: String?
     }
 
     public struct Artifact: Codable, Hashable, Sendable {
         public let name: String
         public let path: String
-        public let sha256: String
+        public let sha256: String?
         public let architectures: Set<String>
         public let signature: Signature
     }
@@ -463,16 +465,19 @@ public struct MediaToolVerifier: Sendable {
               Set(artifacts.map(\.path)).count == artifacts.count,
               Set(sources.map(\.name)).count == sources.count,
               Set(licenses.map(\.source)).count == licenses.count,
-              artifacts.allSatisfy({ $0.architectures == build.architectures && ($0.signature.mode == "adhoc" || $0.signature.mode == "identity") }) else {
+              artifacts.allSatisfy({ Self.validArtifactIdentity($0, architectures: build.architectures) }) else {
             throw FileConvertError.providerUnavailable("Invalid media tool manifest")
         }
         let ffmpegArtifact = artifacts.first { $0.name == "ffmpeg" }!
         let ffprobeArtifact = artifacts.first { $0.name == "ffprobe" }!
         let ffmpeg = try Self.containedRegularFile(relativePath: ffmpegArtifact.path, in: root, requiresExecutable: true)
         let ffprobe = try Self.containedRegularFile(relativePath: ffprobeArtifact.path, in: root, requiresExecutable: true)
-        guard try Self.sha256(ffmpeg) == ffmpegArtifact.sha256.lowercased(),
-              try Self.sha256(ffprobe) == ffprobeArtifact.sha256.lowercased() else {
-            throw FileConvertError.providerUnavailable("Media tool hash mismatch")
+        for (artifact, executable) in [(ffmpegArtifact, ffmpeg), (ffprobeArtifact, ffprobe)] {
+            if let expectedHash = artifact.sha256 {
+                guard try Self.sha256(executable) == expectedHash.lowercased() else {
+                    throw FileConvertError.providerUnavailable("Media tool hash mismatch")
+                }
+            }
         }
         for license in licenses {
             let notice = try Self.containedRegularFile(relativePath: license.source, in: root)
@@ -481,8 +486,8 @@ public struct MediaToolVerifier: Sendable {
             }
         }
         if signaturePolicy == .requireValid {
-            try await verifySignature(ffmpeg)
-            try await verifySignature(ffprobe)
+            try verifySignature(ffmpeg, signature: ffmpegArtifact.signature)
+            try verifySignature(ffprobe, signature: ffprobeArtifact.signature)
         }
         try await verifyArchitectures(ffmpeg, expected: build.architectures)
         try await verifyArchitectures(ffprobe, expected: build.architectures)
@@ -533,9 +538,23 @@ public struct MediaToolVerifier: Sendable {
         return text
     }
 
-    private func verifySignature(_ executable: URL) async throws {
-        let result = try await inspection(URL(filePath: "/usr/bin/codesign"), ["-v", executable.path], Self.sanitizedEnvironment, .seconds(10))
-        guard result.terminationStatus == 0 else { throw FileConvertError.providerUnavailable("Media tool code signature is invalid") }
+    private func verifySignature(_ executable: URL, signature: MediaToolManifest.Signature) throws {
+        var staticCode: SecStaticCode?
+        guard SecStaticCodeCreateWithPath(executable as CFURL, [], &staticCode) == errSecSuccess,
+              let staticCode else {
+            throw FileConvertError.providerUnavailable("Media tool code signature is unavailable")
+        }
+        var requirement: SecRequirement?
+        if signature.mode == "identity" {
+            let text = "anchor apple generic and certificate leaf[subject.OU] = \"\(Self.expectedTeamIdentifier)\""
+            guard SecRequirementCreateWithString(text as CFString, [], &requirement) == errSecSuccess else {
+                throw FileConvertError.providerUnavailable("Media tool code requirement is invalid")
+            }
+        }
+        let flags = SecCSFlags(rawValue: kSecCSStrictValidate | kSecCSCheckAllArchitectures)
+        guard SecStaticCodeCheckValidity(staticCode, flags, requirement) == errSecSuccess else {
+            throw FileConvertError.providerUnavailable("Media tool code signature is invalid")
+        }
     }
 
     private func verifyArchitectures(_ executable: URL, expected: Set<String>) async throws {
@@ -545,6 +564,22 @@ public struct MediaToolVerifier: Sendable {
         guard observed == expected else { throw FileConvertError.providerUnavailable("Media tool architecture mismatch") }
     }
 
+    private static let expectedTeamIdentifier = "C5C4W9B7FS"
+
+    private static func validArtifactIdentity(
+        _ artifact: MediaToolManifest.Artifact,
+        architectures: Set<String>
+    ) -> Bool {
+        guard artifact.architectures == architectures else { return false }
+        switch artifact.signature.mode {
+        case "adhoc":
+            return artifact.sha256 != nil && artifact.signature.teamIdentifier == nil
+        case "identity":
+            return artifact.sha256 == nil && artifact.signature.teamIdentifier == expectedTeamIdentifier
+        default:
+            return false
+        }
+    }
     private static let sanitizedEnvironment = ["PATH": "/usr/bin:/bin", "HOME": "/var/empty", "LANG": "C"]
 
     private static func canonicalDirectory(_ directory: URL) throws -> URL {
@@ -598,7 +633,7 @@ public struct MediaToolVerifier: Sendable {
         if let artifacts = manifest["artifacts"] as? [[String: Any]] {
             for artifact in artifacts {
                 try validateObject(artifact, allowed: ["name", "path", "sha256", "architectures", "signature"])
-                if let signature = artifact["signature"] as? [String: Any] { try validateObject(signature, allowed: ["mode", "identity"]) }
+                if let signature = artifact["signature"] as? [String: Any] { try validateObject(signature, allowed: ["mode", "identity", "teamIdentifier"]) }
             }
         }
         if let sources = manifest["sources"] as? [[String: Any]] { for source in sources { try validateObject(source, allowed: ["name", "version", "url", "sha256", "license"]) } }

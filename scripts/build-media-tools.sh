@@ -106,7 +106,14 @@ build_arch arm64
 STAGING="$WORK_DIR/staging"; rm -rf "$STAGING"; mkdir -p "$STAGING/LICENSES"
 install -m 755 "$BUILD_DIR/arm64/ffmpeg/ffmpeg" "$STAGING/ffmpeg"
 install -m 755 "$BUILD_DIR/arm64/ffmpeg/ffprobe" "$STAGING/ffprobe"
-if [[ -n "$SIGNING_IDENTITY" ]]; then codesign --force --sign "$SIGNING_IDENTITY" "$STAGING/ffmpeg" "$STAGING/ffprobe"; else codesign --force --sign - "$STAGING/ffmpeg" "$STAGING/ffprobe"; fi
+if [[ -n "$SIGNING_IDENTITY" ]]; then
+  codesign --force --sign "$SIGNING_IDENTITY" --options runtime "$STAGING/ffmpeg" "$STAGING/ffprobe"
+  requirement='anchor apple generic and certificate leaf[subject.OU] = "C5C4W9B7FS"'
+  codesign --verify --strict -R="$requirement" "$STAGING/ffmpeg" "$STAGING/ffprobe" ||
+    die "identity-signed media tools must use the Chase Putnam team"
+else
+  codesign --force --sign - --options runtime "$STAGING/ffmpeg" "$STAGING/ffprobe"
+fi
 
 # Materialize exact notices and their hashes; this is part of the signed source lock.
 for item in "${SOURCES[@]}"; do
@@ -128,7 +135,7 @@ for row in rows:
     licenses.append({"name": name, "license": license_name, "source": f"LICENSES/{name}.txt", "sha256": notice_hash})
 pathlib.Path(output).write_text(json.dumps({"sources": sources, "licenses": licenses}, indent=2, sort_keys=True) + "\n")
 PY
-MEDIA_TOOLS_SIGNING_IDENTITY="$SIGNING_IDENTITY" "$ROOT/Scripts/generate-media-manifest.py" --ffmpeg "$STAGING/ffmpeg" --ffprobe "$STAGING/ffprobe" --source-lock "$STAGING/source-lock.json" --output "$STAGING/manifest.json"
+MEDIA_TOOLS_SIGNING_IDENTITY="$SIGNING_IDENTITY" MEDIA_TOOLS_TEAM_IDENTIFIER="${SIGNING_IDENTITY:+C5C4W9B7FS}" "$ROOT/Scripts/generate-media-manifest.py" --ffmpeg "$STAGING/ffmpeg" --ffprobe "$STAGING/ffprobe" --source-lock "$STAGING/source-lock.json" --output "$STAGING/manifest.json"
 rm "$STAGING/source-lock.json"
 mkdir -p "$OUTPUT_DIR"
 rm -rf "$OUTPUT_DIR/LICENSES" "$OUTPUT_DIR/ffmpeg" "$OUTPUT_DIR/ffprobe"

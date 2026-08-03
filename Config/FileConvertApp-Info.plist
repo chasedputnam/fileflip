@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>$(APP_DISPLAY_NAME)</string>
+	<string>$(INFOPLIST_KEY_CFBundleDisplayName)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -19,7 +19,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSApplicationCategoryType</key>
-	<string>$(APP_CATEGORY)</string>
+	<string>$(INFOPLIST_KEY_LSApplicationCategoryType)</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>15.0</string>
 	<key>LSUIElement</key>
@@ -39,7 +39,7 @@
 	<key>SUEnableSystemProfiling</key>
 	<false/>
 	<key>SUFeedURL</key>
-	<string>https://github.com/chasedputnam/file-flip/releases/latest/download/appcast.xml</string>
+	<string>https://github.com/chasedputnam/fileflip/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>qRpScbDI+83LZ/B0ngu1s7hi4IG047zi96qnThQEfEQ=</string>
 	<key>SURequireSignedFeed</key>
