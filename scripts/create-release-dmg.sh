@@ -37,6 +37,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
+rm -f $OUTPUT
 mkdir -p "$STAGING" "$BACKGROUND_DIR"
 ditto "$APP" "$STAGING/FileFlip.app"
 ln -s /Applications "$STAGING/Applications"

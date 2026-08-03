@@ -7,10 +7,10 @@ require "fileutils"
 ROOT = File.expand_path("..", __dir__)
 APP_NAME = "FileFlip"
 APP_CATEGORY = "public.app-category.utilities"
-APP_VERSION = "0.2.2"
-APP_BUILD_NUMBER = "2"
+APP_VERSION = "0.2.3"
+APP_BUILD_NUMBER = "1"
 PROJECT_PATH = File.join(ROOT, "#{APP_NAME}.xcodeproj")
-SPARKLE_VERSION = "2.9.4"
+SPARKLE_VERSION = "2.9.5"
 MACOS_DEPLOYMENT_TARGET = "15.0"
 FileUtils.rm_rf(PROJECT_PATH)
 project = Xcodeproj::Project.new(PROJECT_PATH)

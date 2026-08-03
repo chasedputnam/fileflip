@@ -15,7 +15,7 @@
   "updater": {
     "sparkleVersion": "2.9.4",
     "keychainAccount": "com.chasedputnam.FileFlip",
-    "publicEdKey": "qRpScbDI+83LZ/B0ngu1s7hi4IG047zi96qnThQEfEQ=",
+    "publicEdKey": "V3mZERxbVUPMLMifulTKLSa7zeOQdXSKw6xkShy6y6g=",
     "repository": "chasedputnam/fileflip",
     "feedAssetName": "appcast.xml",
     "diskImageAssetName": "FileFlip.dmg",

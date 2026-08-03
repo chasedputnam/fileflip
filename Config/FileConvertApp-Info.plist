@@ -41,7 +41,7 @@
 	<key>SUFeedURL</key>
 	<string>https://github.com/chasedputnam/fileflip/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>qRpScbDI+83LZ/B0ngu1s7hi4IG047zi96qnThQEfEQ=</string>
+	<string>V3mZERxbVUPMLMifulTKLSa7zeOQdXSKw6xkShy6y6g=</string>
 	<key>SURequireSignedFeed</key>
 	<true/>
 	<key>SUScheduledCheckInterval</key>
